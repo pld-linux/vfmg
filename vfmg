@@ -20,8 +20,8 @@ $lang1=~s/_.*//;
 
 my %apps;
 
-my $ee=1;
-my $ii=2;
+my $ae=1;	# application exec
+my $ai=2;	# application icon
 find(\&wanted,'/usr/share/applications/');
 
 sub wanted {
@@ -64,9 +64,9 @@ sub wanted {
 	my $cat;
 	foreach $cat(@cats) {
 # TODO: check if binary exist within $PATH
-		$apps{$cat}{$name}[$ee]="$exec";
+		$apps{$cat}{$name}[$ae]="$exec";
 # TODO: check if icon exist
-		$apps{$cat}{$name}[$ii]="$icon";
+		$apps{$cat}{$name}[$ai]="$icon";
 	}
 }
 
@@ -74,7 +74,7 @@ sub wanted {
 foreach my $category(sort keys %apps) {
 	print "$category	\n";
 	foreach my $name(sort keys %{$apps{$category}}) {
-		printf "	%s|%s|%s\n",$name,$apps{$category}{$name}[$ii],$apps{$category}{$name}[$ee];
+		printf "	%s|%s|%s\n",$name,$apps{$category}{$name}[$ai],$apps{$category}{$name}[$ae];
 	}
 	print "\n";
 }
@@ -82,10 +82,7 @@ foreach my $category(sort keys %apps) {
 
 # read XDG menu specification
 
-my %menu;
 my $file="";
-my $level=0;
-my $trigger=0;
 
 open F_IN, "/etc/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
 while(<F_IN>) {
@@ -106,32 +103,136 @@ sub getname {
 	$1;
 }
 
+my @menu;
+		# positive level: submenu
+		# negative level: entry
+		my $ml=0;
+		my $mi=1;
+		my $me=2;
+=for menustruct
+	menu[x] {ble}	-1	ble.png	/usr/bin/ble
+		{bla}	3	bla.xpm
+		{foo}	5	foo.png
+		{bar}	7	bar.xpm
+=cut
+
+$menu[0]{zadad}[0]=-1;
+$menu[0]{zadad}[1]="foobar.png";
+$menu[0]{zadad}[2]="/foo/bar/tralala";
+$menu[0]{dad}[0]=1;
+$menu[0]{dad}[1]="bar.png";
+$menu[1]{dcd}[0]=-1;
+$menu[1]{dcd}[1]="foo.png";
+$menu[1]{dcd}[2]="/foo/tralala";
+
+my $level=0;
+my $trigger=0;
 my $tag;
-my $name;
-my $include;
+my @name;
+my @directory;
+my @include;
+my %tmpapps;
+
+sub cand {
+}
+
+sub cor {
+}
+
+sub cnot {
+}
+
 while($trigger==0 || $level>0) {
 	$tag=&gettag;
-	if($tag=~/^menu$/i){
+	if($tag=~/^menu$/i) {
 		$trigger=1;
 		$level++;
+		$name[$level]="";
+		$directory[$level]="";
+		$include[$level]=0;
 		next;
 	}
-	if($tag=~/^\/menu$/i){
+	if($tag=~/^\/menu$/i) {
 		$level--;
 		next;
 	}
-	if($tag=~/^name$/i){
-		$name=&getname;
+	if($tag=~/^name$/i) {	# TODO: search forward for it
+		$name[$level]=&getname;
+#		$menu[$#menu+1][$ml]=$level;
+#		$menu[$#menu][$mn]=$name[$level];
 		gettag;		# must be </name> else GIGO and we don't care
 		next;
 	}
-	if($tag=~/^include$/i){
-		$include=0;
+	if($tag=~/^\/name$/i) {
+		# we shouldn't be here!
 		next;
 	}
-	if($tag=~/^\/include$/i){
-		$include=0;
+	if($tag=~/^directory$/i) {	# TODO: search forward for it
+		$directory[$level]=&getname;
+		gettag;		# must be </directory> else GIGO and we don't care
 		next;
 	}
-	print "$level: $tag\n";
+	if($tag=~/^\/directory$/i) {
+		# we shouldn't be here!
+		next;
+	}
+	if($tag=~/^include$/i) {
+		$include[$level]=1;
+		next;
+	}
+	if($tag=~/^\/include$/i) {
+		$include[$level]=0;
+		next;
+	}
+	if(($tag=~/^and$/i)&&($include[$level])) {
+		&cand;
+		next;
+	}
+	if(($tag=~/^\/and$/i)&&($include[$level])) {
+		# we shouldn't be here!
+		next;
+	}
+	if(($tag=~/^or$/i)&&($include[$level])) {
+		&cor;
+		next;
+	}
+	if(($tag=~/^\/or$/i)&&($include[$level])) {
+		# we shouldn't be here!
+		next;
+	}
+	if(($tag=~/^not$/i)&&($include[$level])) {
+		&cnot;
+		next;
+	}
+	if(($tag=~/^\/not$/i)&&($include[$level])) {
+		# we shouldn't be here!
+		next;
+	}
+	if(($tag=~/^category$/i)&&($include[$level])) {
+	#	$directory[$level]=&getname;
+		gettag;		# must be </category> else GIGO and we don't care
+		next;
+	}
+	if(($tag=~/^\/category$/i)&&($include[$level])) {
+		# we shouldn't be here!
+		next;
+	}
+	# print "$level: $tag\n";
 }
+
+# print "\n\n\n$file\n";
+
+sub outgen {
+	my $no=$_[0];
+	foreach my $entry(sort keys %{$menu[$no]}) {
+		if($menu[$no]{$entry}[$ml]<0) {
+			print "Entry: $entry $menu[$no]{$entry}[$mi] $menu[$no]{$entry}[$me]\n";
+		} else {
+			print "Menu: $entry $menu[$no]{$entry}[$mi]\n";
+			outgen($menu[$no]{$entry}[$ml]);
+			print "/Menu\n";
+		}
+	}
+}
+
+&outgen(0);
