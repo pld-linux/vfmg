@@ -408,8 +408,8 @@ diff -ur vfmg-0.9.18/vfmg.init vfmg/vfmg.init
  	if is_yes "$XFCE4" && [ -f /etc/xfce4/menu2.xml ]; then
  			show "Regenerating XFCE4 menu"; busy
 -			if vfmg -i -f -x -c -u -m xfce4 > /etc/xfce4/menu2.xml 2>/dev/null; then ok; else fail; fi
-+			if vfmg -i -f -x -c -u -m xfce4 > /etc/xfce4/menu2.xml. 2>/dev/null \
-+				&& mv -f /etc/xfce4/menu2.xml. /etc/xfce4/menu2.xml; then ok; else fail; fi
++			if vfmg -f -x -c -u -m xfce4 > /etc/xdg/xfce4/desktop/menu2.xml. 2>/dev/null \
++				&& mv -f /etc/xdg/xfce4/desktop/menu2.xml. /etc/xdg/xfce4/desktop/menu2.xml; then ok; else fail; fi
 +	fi
 +	if is_yes "$FVWM2" && [ -f /etc/X11/fvwm2/fvwm2.menu2 ]; then
 +			show "Regenerating FVWM2 menu"; busy
