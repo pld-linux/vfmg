@@ -30,7 +30,7 @@ GetOptions('help'=>\$o_help,
 	);
 
 if($o_help) {
-	print "Usage:	$0 [options] afterstep|blackbox|fluxbox|fvwm2|icewm|wmaker|wmaker-old|xfce4
+	print "Usage:	$0 [options] afterstep|blackbox|fluxbox|fvwm2|icewm|olvwm|wmaker|wmaker-old|xfce4
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
 	-e, --end	- echo omitted XDG file ending to stderr
@@ -45,11 +45,11 @@ if($o_help) {
 	exit;
 }
 
-die "Missing argument (afterstep|blackbox|fluxbox|fvwm2|icewm|wmaker|wmaker-old|xfce4)\n"
+die "Missing argument (afterstep|blackbox|fluxbox|fvwm2|icewm|olvwm|wmaker|wmaker-old|xfce4)\n"
 	unless exists $ARGV[0];
 $o_output=$ARGV[0];
 die "Unrecognized argument: $o_output\n"
-	unless $o_output=~/^(afterstep|blackbox|fluxbox|fvwm2|icewm|wmaker|wmaker-old|xfce4)$/;
+	unless $o_output=~/^(afterstep|blackbox|fluxbox|fvwm2|icewm|olvwm|wmaker|wmaker-old|xfce4)$/;
 
 
 if($o_exec) {
@@ -671,6 +671,25 @@ sub fvwm2 {
 	}
 	print "\n";
 }
+sub olvwm {
+	my $no=$_[0];
+	my $name;
+	foreach my $entry(sort keys %{$menu[$no]}) {
+		print "$level";
+		if($menu[$no]{$entry}[0]<0) {
+			print "\"$entry\"	exec $menu[$no]{$entry}[2]\n";
+		} else {
+			$name=$entry;
+			$name=~s/^ //;
+			print "\"$name\" MENU\n";
+			$level.="	";
+			olvwm($menu[$no]{$entry}[0]);
+			$level=~s/	//;
+			print "$level\"$name\" END PIN\n";
+		}
+	}
+}
+
 
 if($o_output eq "icewm") {
 	icewm($o_strip);
@@ -727,5 +746,9 @@ if($o_output eq "fluxbox") {	# This is the same as blackbox (I hope so)
 if($o_output eq "fvwm2") {
 	$level="fvwm2";
 	fvwm2($o_strip);
+	exit;
+}
+if($o_output eq "olvwm") {
+	olvwm($o_strip);
 	exit;
 }
