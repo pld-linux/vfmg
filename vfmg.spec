@@ -3,7 +3,7 @@ Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
 Version:	0.9.18
-Release:	3
+Release:	4
 License:	GPL
 Group:		X11/Window Managers/Tools
 Vendor:		GoTaR <gotar@pld-linux.org>
@@ -13,6 +13,8 @@ Source1:	%{name}.cron
 Patch0:		%{name}-fvwm2.patch
 Patch1:		%{name}-fvwm.patch
 Patch2:		%{name}-use_tempfile.patch
+Patch3:		%{name}-codeset.patch
+Patch4:		%{name}-scale_icon.patch
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
 Requires:	applnk >= 1.9.0
@@ -53,6 +55,8 @@ generowanie menu dla zarz±dców okien o okreslonych godzinach.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 
 %install
 rm -rf $RPM_BUILD_ROOT
