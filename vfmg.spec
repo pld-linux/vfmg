@@ -1,7 +1,7 @@
 Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
-Version:	0.9.5
+Version:	0.9.6
 Release:	1
 License:	GPL
 Group:		X11/Window Managers/Tools
