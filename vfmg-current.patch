@@ -451,3 +451,9 @@ diff -ur vfmg-0.9.18/vfmg.sysconfig vfmg/vfmg.sysconfig
  
  # This must be last line !
  # vi:syntax=sh:tw=78:ts=8:sw=4
+diff -urN vfmg-0.9.18/vfmg.cron vfmg-current/vfmg.cron
+--- vfmg-0.9.18/vfmg.cron	1970-01-01 01:00:00.000000000 +0100
++++ vfmg-current/vfmg.cron	2004-10-22 03:15:43.000000000 +0200
+@@ -0,0 +1,2 @@
++# regenerate default menus for different windowmanagers
++15 */2 * * *	root	/etc/rc.d/init.d/vfmg restart >/dev/null 2>&1
