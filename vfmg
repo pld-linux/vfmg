@@ -84,7 +84,8 @@ foreach my $category(sort keys %apps) {
 
 my $file="";
 
-open F_IN, "/etc/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
+#open F_IN, "/etc/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
+open F_IN, "/home/gotar/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
 #open F_IN, "/home/gotar/xdg/menus/kde-settings.menu" or die "! Cannot open $_: $!\n";
 while(<F_IN>) {
 	#s/\s*//g;
@@ -178,7 +179,7 @@ while($trigger==0 || $level>0) {
 		#$menu[$#menu]{$name[$level]}[$ml]=$level;
 #		$menu[$#menu+1][$ml]=$level;
 #		$menu[$#menu][$mn]=$name[$level];
-		gettag;		# must be </name> else GIGO and we don't care
+		&gettag;		# must be </name> else GIGO and we don't care
 		next;
 	}
 	if($tag=~/^\/name$/i) {
@@ -187,7 +188,7 @@ while($trigger==0 || $level>0) {
 	}
 	if($tag=~/^directory$/i) {	# TODO: search forward for it
 		$directory[$level]=&getname;
-		gettag;		# must be </directory> else GIGO and we don't care
+		&gettag;		# must be </directory> else GIGO and we don't care
 		next;
 	}
 	if($tag=~/^\/directory$/i) {
@@ -227,8 +228,13 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if(($tag=~/^category$/i)&&($include[$level])) {
-	#	$directory[$level]=&getname;
-		gettag;		# must be </category> else GIGO and we don't care
+		$directory[$level]=&getname;
+		foreach my $name(sort keys %{$apps{$directory[$level]}}) {
+			$menu[$mno]{$name}[$ml]=-1;
+			$menu[$mno]{$name}[$mi]=$apps{$directory[$level]}{$name}[$ai];
+			$menu[$mno]{$name}[$me]=$apps{$directory[$level]}{$name}[$ae];
+		}
+		&gettag;		# must be </category> else GIGO and we don't care
 		next;
 	}
 	if(($tag=~/^\/category$/i)&&($include[$level])) {
@@ -249,12 +255,12 @@ sub outgen {
 			for(my $i=0; $i<=$level; $i++) {
 				print "	";
 			}
-			print "Entry: $entry $menu[$no]{$entry}[$mi] $menu[$no]{$entry}[$me]\n";
+			print "Entry: \"$entry\" $menu[$no]{$entry}[$mi] $menu[$no]{$entry}[$me]\n";
 		} else {
 			for(my $i=0; $i<=$level; $i++) {
 				print "	";
 			}
-			print "Menu: $entry $menu[$no]{$entry}[$mi]\n";
+			print "Menu: \"$entry\" $menu[$no]{$entry}[$mi]\n";
 			$level++;
 			outgen($menu[$no]{$entry}[$ml]);
 			$level--;
