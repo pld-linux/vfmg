@@ -1,0 +1,127 @@
+--- vfmg-0.9.18/vfmg.orig	2004-09-07 18:07:08.000000000 +0200
++++ vfmg-0.9.18/vfmg	2004-09-17 03:41:09.000000000 +0200
+@@ -41,7 +41,7 @@
+ 	);
+ 
+ if($o_help) {
+-	print "Usage:	$0 [options] {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm2, icewm, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}
++	print "Usage:	$0 [options] {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm, fvwm2, icewm, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}
+ 	-h, --help	- print this help
+ 	-t, --tags	- echo omitted tags to stderr
+ 	-e, --end	- echo omitted XDG file ending to stderr
+@@ -60,11 +60,11 @@
+ 	exit;
+ }
+ 
+-die "Missing argument {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm2, icewm, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}\n"
++die "Missing argument {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm, fvwm2, icewm, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}\n"
+ 	unless exists $ARGV[0];
+ $o_output=$ARGV[0];
+ die "Unrecognized argument: $o_output\n"
+-	unless $o_output=~/^(aewm|afterstep|blackbox|enlightenment|fbpanel|fluxbox|fvwm2|icewm|openbox|olvwm|qvwm|wmaker|wmaker-old|xfce4|xpde)$/;
++	unless $o_output=~/^(aewm|afterstep|blackbox|enlightenment|fbpanel|fluxbox|fvwm|fvwm2|icewm|openbox|olvwm|qvwm|wmaker|wmaker-old|xfce4|xpde)$/;
+ 
+ my $tmp="$ENV{'HOME'}/.local/share";
+ $tmp="$ENV{'XDG_DATA_HOME'}" if $ENV{'XDG_DATA_HOME'};
+@@ -719,6 +719,7 @@
+ sub afterstep {
+ 	my $no=$_[0];
+ 	my $dir=$_[1];
++	print "dir=".$dir;
+ 	foreach my $entry(keys %{$menu[$no]}) {
+ 		$name=$entry;
+ 		if($menu[$no]{$entry}[0]<0) {
+@@ -740,6 +741,39 @@
+ 	}
+ }
+ 
++sub fvwm {
++	my $no=$_[0];
++	my $file=$_[1];
++	$file=~s|^\.||;
++	my $basename=$_[2];
++	foreach my $entry(keys %{$menu[$no]}) {
++		if($menu[$no]{$entry}[0]>=0) {
++			$name=substr($entry,1);
++			$name=~s|/||g;
++			my $menutitle=$name;
++			$name=~s/\s+/_/g;
++			fvwm($menu[$no]{$entry}[0],"$file.$name","$menutitle");
++		}
++	}
++	if (!$file) {
++		return;
++	}
++	print "Popup \"$file\"\n";
++	print "\tTitle \"$basename\"\n"; 
++	foreach my $entry(keys %{$menu[$no]}) {
++		if($menu[$no]{$entry}[0]<0) {
++			$name=$entry;
++			$name=~s/\"/\\\"/g;
++			print "\tExec \"$name\"\texec $menu[$no]{$entry}[2]\n";
++		} else { 
++			$name=substr($entry,1);
++			$name=~s|/||g;
++			print "\tPopup \"$name\"\t$file.$name\n";
++		}
++	}
++	print "EndPopup\n\n";
++}
++
+ sub fvwm2 {
+ 	my $no=$_[0];
+ 	my $file;
+@@ -965,6 +999,10 @@
+ 	afterstep($o_strip,$dir);
+ 	exit;
+ }
++if($o_output eq "fvwm") {
++	fvwm($o_strip,"", "fvwm");
++	exit;
++}
+ if($o_output eq "fluxbox") {	# This is the same as blackbox (I hope so)
+ 	print "[begin] (Fluxbox)\n" unless $o_nomenu;
+ 	blackbox($o_strip);
+--- vfmg-0.9.18/vfmg.init~	2004-09-17 03:46:01.000000000 +0200
++++ vfmg-0.9.18/vfmg.init	2004-09-17 03:46:01.000000000 +0200
+@@ -31,6 +31,11 @@
+ 			if vfmg -i -f -x -c fvwm2 > /etc/X11/fvwm2/fvwm2.menu2. 2>/dev/null \
+ 				&& mv -f /etc/X11/fvwm2/fvwm2.menu2. /etc/X11/fvwm2/fvwm2.menu2; then ok; else fail; fi
+ 	fi
++	if is_yes "$FVWM" && [ -f /etc/X11/fvwm/fvwm.menu ]; then
++			show "Regenerating FVWM menu"; busy
++			if vfmg -f -x -c fvwm > /etc/X11/fvwm/fvwm.menu. 2>/dev/null \
++				&& mv -f /etc/X11/fvwm/fvwm.menu. /etc/X11/fvwm/fvwm.menu; then ok; else fail; fi
++	fi
+ 	touch /var/lock/subsys/vfmg
+ 	;;
+   stop)
+--- vfmg-0.9.18/vfmg.html~	2004-09-17 03:43:48.000000000 +0200
++++ vfmg-0.9.18/vfmg.html	2004-09-17 03:43:48.000000000 +0200
+@@ -4,7 +4,7 @@
+ 	<title>VFolders Menu Generator home page</title>
+ 	<meta name="author" content="gotar">
+ 	<meta name="description" content="VFolders Menu Generator home page">
+-	<meta name="keywords" content="vfmg, menu, window manager, vfolders, aewm, afterstep, blackbox, enlightenment, fluxbox, fvwm2, icewm, olvwm, qvwm, wmaker, xfce4, xpde, fbpanel, openbox">
++	<meta name="keywords" content="vfmg, menu, window manager, vfolders, aewm, afterstep, blackbox, enlightenment, fluxbox, fvwm, fvwm2, icewm, olvwm, qvwm, wmaker, xfce4, xpde, fbpanel, openbox">
+ 	<meta http-equiv="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+ </head>
+ <body bgcolor=lightblue>
+@@ -38,6 +38,7 @@
+ <a TARGET="_blank" href="http://enlightenment.org/">enlightenment</a>,
+ <a TARGET="_blank" href="http://fbpanel.sourceforge.net/">fbpanel</a>,
+ <a TARGET="_blank" href="http://fluxbox.sourceforge.net/">fluxbox</a>,
++<a TARGET="_blank" href="http://www.fvwm.org/">fvwm</a>,
+ <a TARGET="_blank" href="http://www.fvwm.org/">fvwm2</a>,
+ <a TARGET="_blank" href="http://www.icewm.org/">icewm</a>,
+ <a TARGET="_blank" href="http://www.phys.columbia.edu/~flame/olvwm.html">olvwm</a>,
+--- vfmg-0.9.18/vfmg.sysconfig~	2004-09-17 03:46:08.000000000 +0200
++++ vfmg-0.9.18/vfmg.sysconfig	2004-09-17 03:46:08.000000000 +0200
+@@ -4,6 +4,7 @@
+ XFCE4="yes"
+ FLUXBOX="yes"
+ FVWM2="yes"
++FVWM="yes"
+ 
+ # This must be last line !
+ # vi:syntax=sh:tw=78:ts=8:sw=4
