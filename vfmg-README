@@ -10,7 +10,6 @@ TODO:
 - check for empty $file
 - default f/a icon option
 - readline on closed filehandle
-- stripping 1st level menu
 - old style afterstep menu
 - locate the slowest part
 - make use of XDG_{CONFIG,DATA}_{DIRS,HOME} env. variables

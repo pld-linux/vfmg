@@ -13,6 +13,7 @@ my $o_clear=0;
 my $o_promote=0;
 my $o_verbose=0;
 my $o_full=0;
+my $o_strip=0;
 my $o_output="";
 my @path;
 
@@ -24,7 +25,8 @@ GetOptions('help'=>\$o_help,
 	'clear'=>\$o_clear,
 	'promote'=>\$o_promote,
 	'verbose'=>\$o_verbose,
-	'full'=>\$o_full
+	'full'=>\$o_full,
+	'strip'=>\$o_strip
 	);
 
 if($o_help) {
@@ -38,6 +40,7 @@ if($o_help) {
 	-f, --full	- extend icons and binaries for full path (needs -i or -x)
 	-c, --clear	- remove empty menus
 	-p, --promote	- promote submenus with single entry
+	-s, --strip	- strip 1st level menu
 	";
 	exit;
 }
@@ -649,28 +652,32 @@ sub afterstep {
 }
 
 if($o_output eq "icewm") {
-	icewm(0);
+	icewm($o_strip);
 	exit;
 }
 if($o_output eq "blackbox") {
 	print "[begin] (Blackbox)\n";
-	blackbox(0);
+	blackbox($o_strip);
 	print "[end]\n";
 	exit;
 }
 if($o_output eq "wmaker-old") {
-	wmakerold(0);
+	wmakerold($o_strip);
 	exit;
 }
 if($o_output eq "wmaker") {
-	wmaker(0,"");
+	if($o_strip) {
+		wmaker(1,",");
+	} else {
+		wmaker(0,"");
+	}
 	exit;
 }
 if($o_output eq "xfce4") {
 	print "<xfdesktop-menu>
 	<title name=\"Desktop Menu\" visible=\"yes\"/>\n";
 	$level.="	";
-	xfce4(0);
+	xfce4($o_strip);
 	print "</xfdesktop-menu>\n";
 	exit;
 }
@@ -687,12 +694,12 @@ if($o_output eq "afterstep") {
 	} else {
 		mkpath("$dir",0,0700);
 	}
-	afterstep(0,$dir);
+	afterstep($o_strip,$dir);
 	exit;
 }
 if($o_output eq "fluxbox") {	# This is the same as blackbox (I hope so)
 	print "[begin] (Fluxbox)\n";
-	blackbox(0);
+	blackbox($o_strip);
 	print "[end]\n";
 	exit;
 }
