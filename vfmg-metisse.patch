@@ -1,6 +1,6 @@
-diff -Nura vfmg-0.9.18.orig/vfmg vfmg-0.9.18/vfmg
---- vfmg-0.9.18.orig/vfmg	2004-12-07 22:20:51.329071000 +0100
-+++ vfmg-0.9.18/vfmg	2004-12-07 22:41:14.452128376 +0100
+diff -Nura vfmg-0.9.18.orig/vfmg vfmg-0.9.18.new/vfmg
+--- vfmg-0.9.18.orig/vfmg	2004-12-09 22:30:45.472547896 +0100
++++ vfmg-0.9.18.new/vfmg	2004-12-09 22:39:09.042993552 +0100
 @@ -41,7 +41,7 @@
  	);
  
@@ -10,7 +10,7 @@ diff -Nura vfmg-0.9.18.orig/vfmg vfmg-0.9.18/vfmg
  	-h, --help	- print this help
  	-t, --tags	- echo omitted tags to stderr
  	-e, --end	- echo omitted XDG file ending to stderr
-@@ -60,11 +60,11 @@
+@@ -60,13 +60,13 @@
  	exit;
  }
  
@@ -22,9 +22,12 @@ diff -Nura vfmg-0.9.18.orig/vfmg vfmg-0.9.18/vfmg
 -	unless $o_output=~/^(aewm|afterstep|blackbox|enlightenment|fbpanel|fluxbox|fvwm|fvwm2|icewm|openbox|olvwm|qvwm|wmaker|wmaker-old|xfce4|xpde)$/;
 +	unless $o_output=~/^(aewm|afterstep|blackbox|enlightenment|fbpanel|fluxbox|fvwm|fvwm2|icewm|metisse|openbox|olvwm|qvwm|wmaker|wmaker-old|xfce4|xpde)$/;
  
- $o_full=1 if $o_icons and $o_output=~/^(enlightenment)$/;
+-$o_full=1 if $o_icons and $o_output=~/^(enlightenment)$/;
++$o_full=1 if $o_icons and $o_output=~/^(enlightenment|metisse)$/;
  	
-@@ -839,6 +839,41 @@
+ my $tmp="$ENV{'HOME'}/.local/share";
+ $tmp="$ENV{'XDG_DATA_HOME'}" if $ENV{'XDG_DATA_HOME'};
+@@ -839,6 +839,46 @@
  	print "\n";
  }
  
@@ -33,6 +36,7 @@ diff -Nura vfmg-0.9.18.orig/vfmg vfmg-0.9.18/vfmg
 +	my $file=$_[1];
 +	$file=~s|^\.||;
 +	my $basename=$_[2];
++	my $icon="";
 +	foreach my $entry(keys %{$menu[$no]}) {
 +		if($menu[$no]{$entry}[0]>=0) {
 +			$name=substr($entry,1);
@@ -48,16 +52,20 @@ diff -Nura vfmg-0.9.18.orig/vfmg vfmg-0.9.18/vfmg
 +	print "DestroyMenu $file\n";
 +	print "AddToMenu $file \"$basename\" Title\n";
 +	foreach my $entry(sort keys %{$menu[$no]}) {
++		$icon=$menu[$no]{$entry}[1] if $o_icons;
++		$icon=scale_icon($icon,"png","-geometry 21x18") if $icon;
++		$icon="\%$icon\%" if $icon;
++		
 +		if($menu[$no]{$entry}[0]<0) {
 +			$name=$entry;
 +			$name=~s/\"/\\\"/g;
-+			print "+ \"$name\"\tExec exec $menu[$no]{$entry}[2]\n";
++			print "+ \"$icon$name\"\tExec exec $menu[$no]{$entry}[2]\n";
 +		} else {
 +			$name=substr($entry,1);
 +			$name=~s|/||g;
 +			my $menutitle=$name;
 +			$name=~s/\s+/_/g;
-+			print "+ \"$menutitle\"\tPopup\t$file.$name\n";
++			print "+ \"$icon$menutitle\"\tPopup\t$file.$name\n";
 +		}
 +	}
 +	print "\n";
@@ -66,12 +74,19 @@ diff -Nura vfmg-0.9.18.orig/vfmg vfmg-0.9.18/vfmg
  sub olvwm {
  	my $no=$_[0];
  	foreach my $entry(sort keys %{$menu[$no]}) {
-@@ -1062,6 +1097,12 @@
+@@ -1062,6 +1102,19 @@
  	fvwm2($o_strip);
  	exit;
  }
 +
 +if($o_output eq "metisse") {
++	$icon_dir="$ENV{'HOME'}/.fvwm-metisse/icons";
++	if(! -d "$icon_dir") {
++		if(-f "$icon_dir") {
++			rename("$icon_dir","$icon_dir.old");
++		}
++		mkpath("$icon_dir",0,0700);
++	}
 +	metisse($o_strip,"", "metisse");
 +	exit;
 +}
@@ -79,9 +94,9 @@ diff -Nura vfmg-0.9.18.orig/vfmg vfmg-0.9.18/vfmg
  if($o_output eq "olvwm") {
  	olvwm($o_strip);
  	exit;
-diff -Nura vfmg-0.9.18.orig/vfmg.html vfmg-0.9.18/vfmg.html
---- vfmg-0.9.18.orig/vfmg.html	2004-12-07 22:20:51.325071000 +0100
-+++ vfmg-0.9.18/vfmg.html	2004-12-07 22:24:29.116962552 +0100
+diff -Nura vfmg-0.9.18.orig/vfmg.html vfmg-0.9.18.new/vfmg.html
+--- vfmg-0.9.18.orig/vfmg.html	2004-12-09 22:30:45.463549264 +0100
++++ vfmg-0.9.18.new/vfmg.html	2004-12-09 22:29:06.784550752 +0100
 @@ -4,7 +4,7 @@
  	<title>VFolders Menu Generator home page</title>
  	<meta name="author" content="gotar">
@@ -99,9 +114,9 @@ diff -Nura vfmg-0.9.18.orig/vfmg.html vfmg-0.9.18/vfmg.html
  <a TARGET="_blank" href="http://www.phys.columbia.edu/~flame/olvwm.html">olvwm</a>,
  <a TARGET="_blank" href="http://www.icculus.org/openbox/">openbox</a>,
  <a TARGET="_blank" href="http://www.qvwm.org/">qvwm</a>,
-diff -Nura vfmg-0.9.18.orig/vfmg-zsh vfmg-0.9.18/vfmg-zsh
+diff -Nura vfmg-0.9.18.orig/vfmg-zsh vfmg-0.9.18.new/vfmg-zsh
 --- vfmg-0.9.18.orig/vfmg-zsh	2004-08-01 08:11:55.000000000 +0200
-+++ vfmg-0.9.18/vfmg-zsh	2004-12-07 22:25:55.922766064 +0100
++++ vfmg-0.9.18.new/vfmg-zsh	2004-12-09 22:29:06.785550600 +0100
 @@ -1,7 +1,7 @@
  #compdef vfmg
  
