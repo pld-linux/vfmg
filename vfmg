@@ -31,7 +31,7 @@ sub wanted {
 	my $cats="";
 	my $term=0;
 	my $lang=0;
-	open F_IN, "$_" or warn "! Cannot open $_: $!\n" and return;
+	open F_IN, "$_" or warn "$_: $!\n" and return;
 	while(<F_IN>) {
 		if (/^Name=(.+)/ && $lang<1) {
 			$name=$1;
@@ -83,7 +83,7 @@ foreach my $category(sort keys %apps) {
 
 my $file="";
 
-open F_IN, "/etc/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
+open F_IN, "/etc/xdg/menus/applications.menu" or die "/etc/xdg/menus/applications.menu: $!\n";
 while(<F_IN>) {
 	#s/\s*//g;
 	chop;
@@ -298,7 +298,7 @@ while($trigger==0 || $level>0) {
 		my $lang=0;
 		my $name="";
 		my $icon="";
-		open F_IN, "/usr/share/desktop-directories/$dir" or warn "! No desktop-directory file for $dir: $!\n";
+		open F_IN, "/usr/share/desktop-directories/$dir" or warn "/usr/share/desktop-directories/$dir: $!\n";
 	while(<F_IN>) {
 		if (/^Name=(.+)/ && $lang<1) {
 			$name=$1;
@@ -322,14 +322,10 @@ while($trigger==0 || $level>0) {
 		$icon=$1 if /^Icon=(.+)/;
 	}
 	close F_IN;
-		if($name eq "") {
-			my $i=$menustack[$#menustack];
-			foreach my $entry(keys %{$menu[$i]}) {
-				$name=$entry if $menu[$i]{$entry}[$ml]==$mno;
-			}
+		if($name ne "") {
+			$directory[$level][$dn]=$name;
+			$directory[$level][$di]=$icon;
 		}
-		$directory[$level][$dn]=$name;
-		$directory[$level][$di]=$icon;	# TODO: some options
 		&gettag;	# must be </directory> else GIGO and we don't care
 		next;
 	}
@@ -368,7 +364,7 @@ while($trigger==0 || $level>0) {
 		$name=&getname;
 		&gettag;	# must be </mergefile> else GIGO and we don't care
 		my $tmpfile="";
-		open F_IN, "/etc/xdg/menus/$name" or warn "! Cannot open $_: $!\n";
+		open F_IN, "/etc/xdg/menus/$name" or warn "/etc/xdg/menus/$name: $!\n";
 		while(<F_IN>) {
 			chop;
 			$tmpfile.=$_;
