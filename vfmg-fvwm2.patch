@@ -18,7 +18,7 @@ diff -u vfmg-0.9.18.orig/vfmg.init vfmg-0.9.18/vfmg.init
 +	if is_yes "$FVWM2" && [ -f /etc/X11/fvwm2/fvwm2.menu2 ]; then
 +			show "Regenerating FVWM2 menu"; busy
 +			if vfmg -i -f -x -c fvwm2 > /etc/X11/fvwm2/fvwm2.menu2. 2>/dev/null \
-+				&& mv /etc/X11/fvwm2/fvwm2.menu2. /etc/X11/fvwm2/fvwm2.menu2; then ok; else fail; fi
++				&& mv -f /etc/X11/fvwm2/fvwm2.menu2. /etc/X11/fvwm2/fvwm2.menu2; then ok; else fail; fi
 +	fi
  	touch /var/lock/subsys/vfmg
  	;;
