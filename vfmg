@@ -321,12 +321,13 @@ while($trigger==0 || $level>0) {
 	}
 	close F_IN;
 		if($name eq "") {
-			foreach my $name2(keys %{$menu[$menustack[$#menustack]]}) {
-				$name=$name2 if $menu[$menustack[$#menustack]]{$name2}[$ml]==$mno;
+			my $i=$menustack[$#menustack];
+			foreach my $entry(keys %{$menu[$i]}) {
+				$name=$entry if $menu[$i]{$entry}[$ml]==$mno;
 			}
 		}
 		$directory[$level][$dn]=$name;
-		$directory[$level][$di]=$icon;
+		$directory[$level][$di]=$icon;	# TODO: some options
 		&gettag;	# must be </directory> else GIGO and we don't care
 		next;
 	}
