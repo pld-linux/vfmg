@@ -8,10 +8,11 @@ TODO:
 - icons cache
 - transliterations
 - check for empty $file
+- default f/a icon option
 - readline on closed filehandle
-- moving submenus before programs within menu
 - stripping 1st level menu
 - old style afterstep menu
 - locate the slowest part
 - make use of XDG_{CONFIG,DATA}_{DIRS,HOME} env. variables
 - support for the rest of tags (vfmg -t)
+- applnk support
