@@ -30,7 +30,7 @@ GetOptions('help'=>\$o_help,
 	);
 
 if($o_help) {
-	print "Usage:	$0 [options] afterstep|blackbox|fluxbox|icewm|wmaker|wmaker-old|xfce4
+	print "Usage:	$0 [options] afterstep|blackbox|fluxbox|fvwm2|icewm|wmaker|wmaker-old|xfce4
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
 	-e, --end	- echo omitted XDG file ending to stderr
@@ -45,11 +45,11 @@ if($o_help) {
 	exit;
 }
 
-die "Missing argument (afterstep|blackbox|fluxbox|icewm|wmaker|wmaker-old|xfce4)\n"
+die "Missing argument (afterstep|blackbox|fluxbox|fvwm2|icewm|wmaker|wmaker-old|xfce4)\n"
 	unless exists $ARGV[0];
 $o_output=$ARGV[0];
 die "Unrecognized argument: $o_output\n"
-	unless $o_output=~/^(afterstep|blackbox|fluxbox|icewm|wmaker|wmaker-old|xfce4)$/;
+	unless $o_output=~/^(afterstep|blackbox|fluxbox|fvwm2|icewm|wmaker|wmaker-old|xfce4)$/;
 
 
 if($o_exec) {
@@ -520,9 +520,8 @@ if($o_promote) {
 							$menu[$i]{$name}=[-1,"$menu[$mno]{$name}[1]","$menu[$mno]{$name}[2]"];
 						}
 						delete($menu[$i]{$entry});
-					} else {
-						$count[$i]++;
 					}
+					$count[$i]++;
 				}
 			}
 		}
@@ -639,7 +638,7 @@ sub afterstep {
 			$file=~s/\s+/_/g;
 			open F_OUT, ">> $dir/$file" or warn "$dir/$file: $!\n";
 			print F_OUT "Exec \"$entry\" exec $menu[$no]{$entry}[2]\n";
-			print F_OUT "MiniPixmap \"/usr/share/pixmaps/$menu[$no]{$entry}[1]\"\n";
+			print F_OUT "MiniPixmap \"$menu[$no]{$entry}[1]\"\n" if $menu[$no]{$entry}[1] ne "";
 			#print F_OUT "MiniPixmap \"mini-app.xpm\"\n";
 			close F_OUT;
 		} else {
@@ -649,6 +648,28 @@ sub afterstep {
 			afterstep($menu[$no]{$entry}[0],"$dir/$name");
 		}
 	}
+}
+sub fvwm2 {
+	my $no=$_[0];
+	my $file;
+	foreach my $entry(sort keys %{$menu[$no]}) {
+		print "AddToMenu $level	\"";
+		if($menu[$no]{$entry}[0]<0) {
+			print         "$entry\"	Exec $menu[$no]{$entry}[2] &\n";
+			print "Style \"$entry\"	Icon $menu[$no]{$entry}[1]\n" if $menu[$no]{$entry}[1] ne "";
+		} else {
+			$name=$entry;
+			$name=~s/^ //;
+			$file=$name;
+			$file=~s/\s+/_/g;
+			$level.=".$file";
+			print "$name\"	Popup $level\n\n";
+			print "AddToMenu $level	\"$name\"	Title\n";
+			fvwm2($menu[$no]{$entry}[0]);
+			$level=~s/\.$file$//;
+		}
+	}
+	print "\n";
 }
 
 if($o_output eq "icewm") {
@@ -701,5 +722,10 @@ if($o_output eq "fluxbox") {	# This is the same as blackbox (I hope so)
 	print "[begin] (Fluxbox)\n";
 	blackbox($o_strip);
 	print "[end]\n";
+	exit;
+}
+if($o_output eq "fvwm2") {
+	$level="fvwm2";
+	fvwm2($o_strip);
 	exit;
 }
