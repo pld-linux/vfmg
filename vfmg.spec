@@ -11,6 +11,7 @@ Source0:	%{name}-%{version}.tar.bz2
 # Source0-md5:	c07263e10693f1f2d9d2af80e4760b5d
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
+Requires:	applnk >= 1.6.2
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
