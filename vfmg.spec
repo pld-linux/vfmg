@@ -2,12 +2,12 @@
 Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
-Version:	0.9.15
-Release:	2
+Version:	0.9.16
+Release:	1
 License:	GPL
 Group:		X11/Window Managers/Tools
 Vendor:		GoTaR <gotar@pld-linux.org>
-Source0:	%{name}-%{version}.tar.bz2
+Source0:	http://ep09.pld-linux.org/~havner/%{name}-%{version}.tar.bz2
 # Source0-md5:	ba13c5c5c2516e0b58257c491c69a568
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
