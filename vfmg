@@ -83,9 +83,7 @@ foreach my $category(sort keys %apps) {
 
 my $file="";
 
-#open F_IN, "/etc/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
-open F_IN, "/home/gotar/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
-#open F_IN, "/home/gotar/xdg/menus/kde-settings.menu" or die "! Cannot open $_: $!\n";
+open F_IN, "/etc/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
 while(<F_IN>) {
 	#s/\s*//g;
 	chop;
@@ -166,7 +164,7 @@ sub cand {
 			my %tmpapps;
 			%tmpapps=&cand if $tag=~/^and$/i;
 			%tmpapps=&cor if $tag=~/^or$/i;
-#			%tmpapps=&cnot if $tag=~/^not$/i;
+			%tmpapps=&cnot if $tag=~/^not$/i;
 			foreach my $cat (keys %iapps) {
 			foreach my $name(keys %{$iapps{$cat}}) {
 				delete($iapps{$cat}{$name}) unless exists $tmpapps{$cat}{$name};
@@ -174,6 +172,7 @@ sub cand {
 			}
 			next;
 		}
+		print "warning: possible XDG file corruption!: $tag\n";
 	}
 	%iapps;
 }
@@ -189,6 +188,7 @@ sub cor {
 				$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
 				$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
 			}
+			&gettag;	# must be </category> else GIGO and we don't care
 			next;
 		}
 		if($tag=~/^(and|or|not)$/i) {
@@ -204,12 +204,50 @@ sub cor {
 			}
 			next;
 		}
+		print "warning: possible XDG file corruption!: $tag\n";
 	}
 	%iapps;
 }
 
 sub cnot {
-	$tag=&gettag;
+	my %iapps;	# internal applications list
+	foreach my $dir (keys %apps) {
+	foreach my $name(sort keys %{$apps{$dir}}) {
+		$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
+		$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+	}
+	}
+	while (1) {
+		$tag=&gettag;
+		last if($tag=~/^\/not$/i);
+		if($tag=~/^category$/i) {
+			$dir=&getname;
+			foreach my $cat (keys %iapps) {
+			next if $cat eq $dir;
+			foreach my $name(keys %{$iapps{$cat}}) {
+				delete($iapps{$cat}{$name}) if exists $iapps{$dir}{$name};
+			}
+			}
+			delete($iapps{$dir});
+			&gettag;	# must be </category> else GIGO and we don't care
+			next;
+		}
+		if($tag=~/^(and|or|not)$/i) {	# I think it doesn't make any sense
+			print "warning: How did you get here!?\n";
+			my %tmpapps;
+			%tmpapps=&cand if $tag=~/^and$/i;
+			%tmpapps=&cor if $tag=~/^or$/i;
+			%tmpapps=&cnot if $tag=~/^not$/i;
+			foreach my $cat (keys %iapps) {
+			foreach my $name(keys %{$iapps{$cat}}) {
+				delete($iapps{$cat}{$name}) if exists $tmpapps{$cat}{$name};
+			}
+			}
+			next;
+		print "warning: possible XDG file corruption!: $tag\n";
+		}
+	}
+	%iapps;
 }
 
 $#menu++;	# let's start from index 1
@@ -282,6 +320,11 @@ while($trigger==0 || $level>0) {
 		$icon=$1 if /^Icon=(.+)/;
 	}
 	close F_IN;
+		if($name eq "") {
+			foreach my $name2(keys %{$menu[$menustack[$#menustack]]}) {
+				$name=$name2 if $menu[$menustack[$#menustack]]{$name2}[$ml]==$mno;
+			}
+		}
 		$directory[$level][$dn]=$name;
 		$directory[$level][$di]=$icon;
 		&gettag;	# must be </directory> else GIGO and we don't care
