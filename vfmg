@@ -12,6 +12,7 @@ my $o_exec=0;
 my $o_clear=0;
 my $o_promote=0;
 my $o_verbose=0;
+my $o_full=0;
 my $o_output="";
 my @path;
 
@@ -22,7 +23,8 @@ GetOptions('help'=>\$o_help,
 	'exec|x'=>\$o_exec,
 	'clear'=>\$o_clear,
 	'promote'=>\$o_promote,
-	'verbose'=>\$o_verbose
+	'verbose'=>\$o_verbose,
+	'full'=>\$o_full
 	);
 
 if($o_help) {
@@ -30,11 +32,12 @@ if($o_help) {
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
 	-e, --end	- echo omitted XDG file ending to stderr
+	-v, --verbose	- verbose stderr output
 	-i, --icons	- check for icons existence
 	-x, --exec	- check for binaries existence
+	-f, --full	- extend icons and binaries for full path (needs -i or -x)
 	-c, --clear	- remove empty menus
 	-p, --promote	- promote submenus with single entry
-	-v, --verbose	- verbose output
 	";
 	exit;
 }
@@ -112,7 +115,11 @@ sub wanted {
 		my $bin=$exec;
 		$bin=~s/(\S+).*/$1/;
 		foreach my $dir(@path) {
-			$exists=1 if -x "$dir/$bin";
+			if(-x "$dir/$bin") {
+				$exists=1;
+				$exec="$dir/$exec" if $o_full;
+				last;
+			}
 		}
 		@cats=() unless $exists;
 	}
@@ -121,7 +128,11 @@ sub wanted {
 		foreach my $dir("$ENV{'HOME'}/.icons","/usr/share/icons","/usr/share/pixmaps") {
 			$icon.=".xpm" if -f "$dir/$icon.xpm";
 			$icon.=".png" if -f "$dir/$icon.png";
-			$exists=1 if -f "$dir/$icon";
+			if(-f "$dir/$icon") {
+				$exists=1;
+				$icon="$dir/$icon" if $o_full;
+				last;
+			}
 		}
 		$icon="" unless $exists;
 	}
@@ -358,7 +369,7 @@ while($trigger==0 || $level>0) {
 		$name=getname();
 		#$menu[$menustack[$#menustack]]{$name}[$ml]=$mno;
 		#$menu[$menustack[$#menustack]]{$name}[$mi]="";
-		$menu[$menustack[$#menustack]]{$name}=[$mno,""];
+		$menu[$menustack[$#menustack]]{" $name"}=[$mno,""];
 		gettag();	# must be </name> else GIGO and we don't care
 		next;
 	}
@@ -396,14 +407,18 @@ while($trigger==0 || $level>0) {
 		foreach my $dir("$ENV{'HOME'}/.icons","/usr/share/icons","/usr/share/pixmaps") {
 			$icon.=".xpm" if -f "$dir/$icon.xpm";
 			$icon.=".png" if -f "$dir/$icon.png";
-			$exists=1 if -f "$dir/$icon";
+			if(-f "$dir/$icon") {
+				$exists=1;
+				$icon="$dir/$icon" if $o_full;
+				last;
+			}
 		}
 		$icon="" unless $exists;
 	}
 		if($name ne "") {
 			#$directory[$level][$dn]=$name;
 			#$directory[$level][$di]=$icon;
-			$directory[$level]=[$name,$icon];
+			$directory[$level]=[" $name",$icon];
 		}
 		gettag();	# must be </directory> else GIGO and we don't care
 		next;
@@ -525,7 +540,9 @@ sub icewm {
 			#$menu[$no]{$entry}[$mi]="folder" if $menu[$no]{$entry}[$mi] eq "";
 			$menu[$no]{$entry}[1]="folder" if $menu[$no]{$entry}[1] eq "";
 			#print "Menu: \"$entry\" \"$menu[$no]{$entry}[$mi]\"\n";
-			print "menu \"$entry\" \"$menu[$no]{$entry}[1]\" {\n";
+			$name=$entry;
+			$name=~s/^ //;
+			print "menu \"$name\" \"$menu[$no]{$entry}[1]\" {\n";
 			$level.="	";
 			#outgen($menu[$no]{$entry}[$ml]);
 			icewm($menu[$no]{$entry}[0]);
@@ -542,7 +559,9 @@ sub blackbox {
 		if($menu[$no]{$entry}[0]<0) {
 			print "[exec] ($entry) {$menu[$no]{$entry}[2]}\n";
 		} else {
-			print "[submenu] ($entry)\n";
+			$name=$entry;
+			$name=~s/^ //;
+			print "[submenu] ($name)\n";
 			$level.="	";
 			blackbox($menu[$no]{$entry}[0]);
 			$level=~s/	//;
@@ -554,15 +573,17 @@ sub blackbox {
 sub wmakerold {
 	my $no=$_[0];
 	foreach my $entry(sort keys %{$menu[$no]}) {
-		print "$level\"$entry\" ";
+		print "$level\"";
 		if($menu[$no]{$entry}[0]<0) {
-			print "EXEC $menu[$no]{$entry}[2]\n";
+			print "$entry\" EXEC $menu[$no]{$entry}[2]\n";
 		} else {
-			print "MENU\n";
+			$name=$entry;
+			$name=~s/^ //;
+			print "$name\" MENU\n";
 			$level.="	";
 			wmakerold($menu[$no]{$entry}[0]);
 			$level=~s/	//;
-			print "$level\"$entry\" END\n";
+			print "$level\"$name\" END\n";
 		}
 	}
 }
@@ -571,11 +592,14 @@ sub wmaker {
 	my $no=$_[0];
 	my $coma=$_[1];
 	foreach my $entry(sort keys %{$menu[$no]}) {
-		print "$coma\n$level(\"$entry\"";
+		print "$coma\n$level(\"";
 		if($menu[$no]{$entry}[0]<0) {
 			$menu[$no]{$entry}[2]=~s/\"/\\\"/g;
-			print", EXEC, \"$menu[$no]{$entry}[2]\")";
+			print "$entry\", EXEC, \"$menu[$no]{$entry}[2]\")";
 		} else {
+			$name=$entry;
+			$name=~s/^ //;
+			print "$name\"";
 			$level.="	";
 			wmaker($menu[$no]{$entry}[0],",");
 			$level=~s/	//;
@@ -592,7 +616,9 @@ sub xfce4 {
 			$menu[$no]{$entry}[2]=~s/\"/\'/g;
 			print "app name=\"$entry\" cmd=\"$menu[$no]{$entry}[2]\"/>\n";
 		} else {
-			print "menu name=\"$entry\" visible=\"yes\">\n";
+			$name=$entry;
+			$name=~s/^ //;
+			print "menu name=\"$name\" visible=\"yes\">\n";
 			$level.="	";
 			xfce4($menu[$no]{$entry}[0]);
 			$level=~s/	//;
@@ -604,7 +630,7 @@ sub xfce4 {
 sub afterstep {
 	my $no=$_[0];
 	my $dir=$_[1];
-	foreach my $entry(sort keys %{$menu[$no]}) {
+	foreach my $entry(keys %{$menu[$no]}) {
 		if($menu[$no]{$entry}[0]<0) {
 			$file=$entry;
 			$file=~s/\s+/_/g;
@@ -614,8 +640,10 @@ sub afterstep {
 			#print F_OUT "MiniPixmap \"mini-app.xpm\"\n";
 			close F_OUT;
 		} else {
-			mkpath("$dir/$entry",0,0700);
-			afterstep($menu[$no]{$entry}[0],"$dir/$entry");
+			$name=$entry;
+			$name=~s/^ //;
+			mkpath("$dir/$name",0,0700);
+			afterstep($menu[$no]{$entry}[0],"$dir/$name");
 		}
 	}
 }
