@@ -85,6 +85,7 @@ foreach my $category(sort keys %apps) {
 my $file="";
 
 open F_IN, "/etc/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
+#open F_IN, "/home/gotar/xdg/menus/kde-settings.menu" or die "! Cannot open $_: $!\n";
 while(<F_IN>) {
 	#s/\s*//g;
 	chop;
@@ -114,7 +115,8 @@ my @menu;
 		{bla}	3	bla.xpm
 		{foo}	5	foo.png
 		{bar}	7	bar.xpm
-=cut
+
+test example:
 
 $menu[0]{zadad}[0]=-1;
 $menu[0]{zadad}[1]="foobar.png";
@@ -124,14 +126,17 @@ $menu[0]{dad}[1]="bar.png";
 $menu[1]{dcd}[0]=-1;
 $menu[1]{dcd}[1]="foo.png";
 $menu[1]{dcd}[2]="/foo/tralala";
+=cut
 
 my $level=0;
+my $mno=0;	# menu number
 my $trigger=0;
 my $tag;
 my @name;
 my @directory;
 my @include;
-my %tmpapps;
+#my %tmpapps;
+my @menustack;
 
 sub cand {
 }
@@ -142,22 +147,35 @@ sub cor {
 sub cnot {
 }
 
+$#menu++;	# let's start from index 1
+		# this index is a pointer to menu struct
+		# (entry in $menu[] table) via $mno
+		# 0 means empty, so it's ommited
+		# twill be made choosable
+
 while($trigger==0 || $level>0) {
 	$tag=&gettag;
 	if($tag=~/^menu$/i) {
-		$trigger=1;
 		$level++;
-		$name[$level]="";
-		$directory[$level]="";
-		$include[$level]=0;
+		$#menu++;
+		$menustack[$#menustack+1]=$mno;
+		$mno=$#menu;
+		#$name[$level]="";
+		#$directory[$level]="";
+		#$include[$level]=0;
+		$trigger=1;
 		next;
 	}
 	if($tag=~/^\/menu$/i) {
+		$mno=$menustack[$#menustack];
+		$#menustack--;
 		$level--;
 		next;
 	}
 	if($tag=~/^name$/i) {	# TODO: search forward for it
 		$name[$level]=&getname;
+		$menu[$menustack[$#menustack]]{$name[$level]}[$ml]=$mno;
+		#$menu[$#menu]{$name[$level]}[$ml]=$level;
 #		$menu[$#menu+1][$ml]=$level;
 #		$menu[$#menu][$mn]=$name[$level];
 		gettag;		# must be </name> else GIGO and we don't care
@@ -222,15 +240,24 @@ while($trigger==0 || $level>0) {
 
 # print "\n\n\n$file\n";
 
+$level=-1;
 sub outgen {
 	my $no=$_[0];
 	foreach my $entry(sort keys %{$menu[$no]}) {
+		next if $menu[$no]{$entry}[$ml]==0;
 		if($menu[$no]{$entry}[$ml]<0) {
+			for(my $i=0; $i<=$level; $i++) {
+				print "	";
+			}
 			print "Entry: $entry $menu[$no]{$entry}[$mi] $menu[$no]{$entry}[$me]\n";
 		} else {
+			for(my $i=0; $i<=$level; $i++) {
+				print "	";
+			}
 			print "Menu: $entry $menu[$no]{$entry}[$mi]\n";
+			$level++;
 			outgen($menu[$no]{$entry}[$ml]);
-			print "/Menu\n";
+			$level--;
 		}
 	}
 }
