@@ -134,7 +134,7 @@ my $mno=0;	# menu number
 my $trigger=0;
 my $tag;
 my @name;
-my @directory;
+my $dir;
 my @include;
 #my %tmpapps;
 my @menustack;
@@ -162,7 +162,6 @@ while($trigger==0 || $level>0) {
 		$menustack[$#menustack+1]=$mno;
 		$mno=$#menu;
 		#$name[$level]="";
-		#$directory[$level]="";
 		#$include[$level]=0;
 		$trigger=1;
 		next;
@@ -187,7 +186,42 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if($tag=~/^directory$/i) {	# TODO: search forward for it
-		$directory[$level]=&getname;
+		$dir=&getname;
+		my $lang=0;
+		my $name="";
+		my $icon="";
+		open F_IN, "/usr/share/desktop-directories/$dir" or warn "! No desktop-directory file for $dir: $!\n";
+	while(<F_IN>) {
+		if (/^Name=(.+)/ && $lang<1) {
+			$name=$1;
+		}
+		if (/^Name\[$lang1\]=(.+)/ && $lang<2) {
+			$name=$1;
+			$lang=1;
+		}
+		if (/^Name\[$lang2\]=(.+)/ && $lang<3) {
+			$name=$1;
+			$lang=2;
+		}
+		if (/^Name=\[$lang3\](.+)/ && $lang<4) {
+			$name=$1;
+			$lang=3;
+		}
+		if (/^Name=\[$lang4\](.+)/ && $lang<5) {
+			$name=$1;
+			$lang=4;
+		}
+		$icon=$1 if /^Icon=(.+)/;
+	}
+	close F_IN;
+		#for(my $i=0; $i<=$#menu; $i++) {
+		my $i=$menustack[$#menustack];
+			foreach my $entry(keys %{$menu[$i]}) {
+				delete($menu[$i]{$entry}) if $menu[$i]{$entry}[$ml]==$mno;
+			}
+			$menu[$i]{$name}[$ml]=$mno;
+			$menu[$i]{$name}[$mi]=$icon;
+		#}
 		&gettag;		# must be </directory> else GIGO and we don't care
 		next;
 	}
@@ -228,11 +262,11 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if(($tag=~/^category$/i)&&($include[$level])) {
-		$directory[$level]=&getname;
-		foreach my $name(sort keys %{$apps{$directory[$level]}}) {
+		$dir=&getname;
+		foreach my $name(keys %{$apps{$dir}}) {
 			$menu[$mno]{$name}[$ml]=-1;
-			$menu[$mno]{$name}[$mi]=$apps{$directory[$level]}{$name}[$ai];
-			$menu[$mno]{$name}[$me]=$apps{$directory[$level]}{$name}[$ae];
+			$menu[$mno]{$name}[$mi]=$apps{$dir}{$name}[$ai];
+			$menu[$mno]{$name}[$me]=$apps{$dir}{$name}[$ae];
 		}
 		&gettag;		# must be </category> else GIGO and we don't care
 		next;
