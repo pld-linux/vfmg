@@ -59,7 +59,7 @@ install vfmg $RPM_BUILD_ROOT%{_bindir}
 install vfmg-zsh $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_vfmg
 install vfmg.init $RPM_BUILD_ROOT/etc/rc.d/init.d/vfmg
 install vfmg.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/vfmg
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/cron.d/
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/cron.d/vfmg
 
 %clean
 rm -rf $RPM_BUILD_ROOT
