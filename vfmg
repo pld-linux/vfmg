@@ -22,7 +22,7 @@ GetOptions('help'=>\$o_help,
 	);
 
 if($o_help) {
-	print "Usage:	$0 [options] icewm|blackbox|wmaker-old|wmaker
+	print "Usage:	$0 [options] blackbox|icewm|wmaker|wmaker-old|xfce4
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
 	-e, --end	- echo omitted XDG file ending to stderr
@@ -33,10 +33,10 @@ if($o_help) {
 	exit;
 }
 
-die "Missing argument (icewm|blackbox|wmaker-old|wmaker)\n" unless exists $ARGV[0];
+die "Missing argument (blackbox|icewm|wmaker|wmaker-old|xfce4)\n" unless exists $ARGV[0];
 $o_output=$ARGV[0];
-die "Unrecognized argument: $o_output\n" if(($o_output ne "icewm")&&($o_output ne "blackbox")
-	&&($o_output ne "wmaker-old")&&($o_output ne "wmaker"));
+die "Unrecognized argument: $o_output\n" if(($o_output ne "blackbox")&&($o_output ne "icewm")
+	&&($o_output ne "wmaker")&&($o_output ne "wmaker-old")&&($o_output ne "xfce4"));
 
 if($o_exec) {
 	@path=split(/:+/,$ENV{'PATH'});
@@ -570,6 +570,28 @@ sub wmaker {
 	}
 }
 
+sub xfce4 {
+	my $no=$_[0];
+	foreach my $entry(sort keys %{$menu[$no]}) {
+		for(my $i=0; $i<=$level; $i++) {
+			print "	";
+		}
+		if($menu[$no]{$entry}[0]<0) {
+			$menu[$no]{$entry}[2]=~s/\"/\\\"/g;
+			print "<app name=\"$entry\" cmd=\"$menu[$no]{$entry}[2]\"/>\n";
+		} else {
+			print "<menu name=\"$entry\" visible=\"yes\">\n";
+			$level++;
+			xfce4($menu[$no]{$entry}[0]);
+			$level--;
+			for(my $i=0; $i<=$level; $i++) {
+				print "	";
+			}
+			print "</menu>\n";
+		}
+	}
+}
+
 if($o_output eq "icewm") {
 	icewm(0);
 	exit;
@@ -586,5 +608,13 @@ if($o_output eq "wmaker-old") {
 }
 if($o_output eq "wmaker") {
 	wmaker(0,"");
+	exit;
+}
+if($o_output eq "xfce4") {
+	print '<xfdesktop-menu>
+	<title name="Desktop Menu" visible="yes" />\n';
+	$level++;
+	xfce4(0);
+	print "</xfdesktop-menu>\n";
 	exit;
 }
