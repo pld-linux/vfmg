@@ -135,6 +135,9 @@ my $trigger=0;
 my $tag;
 my @name;
 my $dir;
+my @directory;
+	my $dn=0;	# directory name
+	my $di=1;	# directory icon
 my @include;
 #my %tmpapps;
 my @menustack;
@@ -167,12 +170,23 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if($tag=~/^\/menu$/i) {
-		$mno=$menustack[$#menustack];
+		#for(my $i=0; $i<=$#menu; $i++) {
+		my $i=$menustack[$#menustack];
+		if(exists $directory[$level]) {
+			foreach my $entry(keys %{$menu[$i]}) {
+				delete($menu[$i]{$entry}) if $menu[$i]{$entry}[$ml]==$mno;
+			}
+			$menu[$i]{$directory[$level][$dn]}[$ml]=$mno;
+			$menu[$i]{$directory[$level][$dn]}[$mi]=$directory[$level][$di];
+			delete($directory[$level]);
+		}
+		#}
+		$mno=$i;
 		$#menustack--;
 		$level--;
 		next;
 	}
-	if($tag=~/^name$/i) {	# TODO: search forward for it
+	if($tag=~/^name$/i) {
 		$name[$level]=&getname;
 		$menu[$menustack[$#menustack]]{$name[$level]}[$ml]=$mno;
 		#$menu[$#menu]{$name[$level]}[$ml]=$level;
@@ -185,7 +199,7 @@ while($trigger==0 || $level>0) {
 		# we shouldn't be here!
 		next;
 	}
-	if($tag=~/^directory$/i) {	# TODO: search forward for it
+	if($tag=~/^directory$/i) {
 		$dir=&getname;
 		my $lang=0;
 		my $name="";
@@ -214,14 +228,8 @@ while($trigger==0 || $level>0) {
 		$icon=$1 if /^Icon=(.+)/;
 	}
 	close F_IN;
-		#for(my $i=0; $i<=$#menu; $i++) {
-		my $i=$menustack[$#menustack];
-			foreach my $entry(keys %{$menu[$i]}) {
-				delete($menu[$i]{$entry}) if $menu[$i]{$entry}[$ml]==$mno;
-			}
-			$menu[$i]{$name}[$ml]=$mno;
-			$menu[$i]{$name}[$mi]=$icon;
-		#}
+		$directory[$level][$dn]=$name;
+		$directory[$level][$di]=$icon;
 		&gettag;		# must be </directory> else GIGO and we don't care
 		next;
 	}
