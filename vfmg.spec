@@ -1,7 +1,7 @@
 Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
-Version:	0.9.4
+Version:	0.9.5
 Release:	1
 License:	GPL
 Group:		X11/Window Managers/Tools
@@ -31,7 +31,7 @@ rm -rf $RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT%{_bindir}
 
-install %{SOURCE0} $RPM_BUILD_ROOT/%{_bindir}
+install %{SOURCE0} $RPM_BUILD_ROOT%{_bindir}
 install %{SOURCE1} README
 
 %clean
