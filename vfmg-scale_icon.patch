@@ -1,0 +1,80 @@
+--- vfmg-0.9.18/vfmg.orig	2004-10-14 23:08:00.961232096 +0200
++++ vfmg-0.9.18/vfmg	2004-10-15 00:56:47.422386144 +0200
+@@ -66,6 +66,8 @@
+ die "Unrecognized argument: $o_output\n"
+ 	unless $o_output=~/^(aewm|afterstep|blackbox|enlightenment|fbpanel|fluxbox|fvwm|fvwm2|icewm|openbox|olvwm|qvwm|wmaker|wmaker-old|xfce4|xpde)$/;
+ 
++$o_full=1 if $o_icons and $o_output=~/^(enlightenment)$/;
++	
+ my $tmp="$ENV{'HOME'}/.local/share";
+ $tmp="$ENV{'XDG_DATA_HOME'}" if $ENV{'XDG_DATA_HOME'};
+ my @tmp=("/usr/local/share","/usr/share");
+@@ -281,6 +283,7 @@
+ my $tag;
+ my $name;
+ my $dir;
++my $icon_dir;
+ my @directory;	# $directory[level]=[name,icon]
+ my $include;
+ my @tmpapps;
+@@ -609,6 +612,25 @@
+ 	}
+ }
+ 
++my $DoConvert = `which convert`;
++sub scale_icon {
++	my $icon_in = $_[0];
++
++	return $icon_in unless $DoConvert;
++
++	my $icon_out = $icon_in;
++	my $icon_ext = $_[1];
++	my $convert_options = $_[2];
++
++	$icon_out =~ s/^.*\///;
++	$icon_out =~ s/\..*$//;
++	$icon_out = "$icon_dir/$icon_out.$icon_ext";
++	if( ! -f "$icon_out") {
++		system("convert $convert_options $icon_in $icon_out");
++	}
++	return $icon_out;
++}
++
+ $level="";
+ sub icewm {
+ 	my $no=$_[0];
+@@ -868,15 +890,18 @@
+ 	print $F_OUT "\"$_[2]\"\n";
+ 	foreach my $entry(sort keys %{$menu[$no]}) {
+ 		$name=encode($o_enc,$entry);
++		my $icon="";
++		$icon=$menu[$no]{$entry}[1] if $o_icons;
++		$icon=scale_icon($icon,"png","-geometry 18x18") if $icon;
+ 		if($menu[$no]{$entry}[0]<0) {
+ 			$name=~s/\"/\\\"/g;
+-			print $F_OUT "\"$name\" \"$menu[$no]{$entry}[1]\" exec \"$menu[$no]{$entry}[2]\"\n";
++			print $F_OUT "\"$name\" \"$icon\" exec \"$menu[$no]{$entry}[2]\"\n";
+ 		} else {
+ 			$name=substr($name,1);
+ 			$name=~s|/||g;
+ 			my $name2=$name;
+ 			$name2=~s/\"/\\\"/g;
+-			print $F_OUT "\"$name2\" \"$menu[$no]{$entry}[1]\" menu \"$dir/$name2.menu\"\n";
++			print $F_OUT "\"$name2\" \"$icon\" menu \"$dir/$name2.menu\"\n";
+ 			enlightenment($menu[$no]{$entry}[0],"$name","$name");
+ 		}
+ 	}
+@@ -1041,6 +1066,13 @@
+ 		rename("$dir","$dir.old");
+ 	}
+ 	mkpath("$dir",0,0700);	# or die
++	$icon_dir="$ENV{'HOME'}/.enlightenment/icons";
++	if(! -d "$icon_dir") {
++		if(-f "$icon_dir") {
++			rename("$icon_dir","$icon_dir.old");
++		}
++		mkpath("$icon_dir",0,0700);
++	}
+ 	enlightenment($o_strip,"index","Enlightenment");
+ 	exit;
+ }
