@@ -1,2 +1,0 @@
-# regenerate default menus for different windowmanagers
-15 */2 * * *	root	/etc/rc.d/init.d/vfmg restart >/dev/null 2>&1
