@@ -79,25 +79,25 @@ sub wanted {
 		if (/^Name=(.+)/ && $lang<1) {
 			$name=$1;
 		}
-		if (/^Name\[$lang1\]=(.+)/ && $lang<2) {
+		if (/^Name\[$lang1\]=(.+?)\s*$/ && $lang<2) {
 			$name=$1;
 			$lang=1;
 		}
-		if (/^Name\[$lang2\]=(.+)/ && $lang<3) {
+		if (/^Name\[$lang2\]=(.+?)\s*$/ && $lang<3) {
 			$name=$1;
 			$lang=2;
 		}
-		if (/^Name=\[$lang3\](.+)/ && $lang<4) {
+		if (/^Name=\[$lang3\](.+?)\s*$/ && $lang<4) {
 			$name=$1;
 			$lang=3;
 		}
-		if (/^Name=\[$lang4\](.+)/ && $lang<5) {
+		if (/^Name=\[$lang4\](.+?)\s*$/ && $lang<5) {
 			$name=$1;
 			$lang=4;
 		}
-		$icon=$1 if /^Icon=(.+)/;
-		$exec=$1 if /^Exec=(.+)/;
-		$cats=$1 if /^Categories=(.+)/;
+		$icon=$1 if /^Icon=(.+?)\s*$/;
+		$exec=$1 if /^Exec=(.+?)\s*$/;
+		$cats=$1 if /^Categories=(.+?)\s*$/;
 		$term=1 if /^Terminal=1/;
 	}
 	close F_IN;
@@ -204,7 +204,8 @@ sub cand {
 	foreach my $name(keys %{$apps{$dir}}) {
 		#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
 		#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
-		$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
+		#$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
+		$iapps{$dir}{$name}=$apps{$dir}{$name};
 	}
 	}
 	while (1) {
@@ -247,7 +248,8 @@ sub cor {
 			foreach my $name(keys %{$apps{$dir}}) {
 				#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
 				#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
-				$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
+				#$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
+				$iapps{$dir}{$name}=$apps{$dir}{$name};
 			}
 			gettag();	# must be </category> else GIGO and we don't care
 			next;
@@ -261,7 +263,8 @@ sub cor {
 			foreach my $name(keys %{$tmpapps{$cat}}) {
 				#$iapps{$cat}{$name}[$ai]=$tmpapps{$cat}{$name}[$ai];
 				#$iapps{$cat}{$name}[$ae]=$tmpapps{$cat}{$name}[$ae];
-				$iapps{$cat}{$name}=[$tmpapps{$cat}{$name}[0],$tmpapps{$cat}{$name}[1]];
+				#$iapps{$cat}{$name}=[$tmpapps{$cat}{$name}[0],$tmpapps{$cat}{$name}[1]];
+				$iapps{$cat}{$name}=$tmpapps{$cat}{$name};
 			}
 			}
 			next;
@@ -277,7 +280,8 @@ sub cnot {
 	foreach my $name(keys %{$apps{$dir}}) {
 		#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
 		#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
-		$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
+		#$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
+		$iapps{$dir}{$name}=$apps{$dir}{$name};
 	}
 	}
 	while (1) {
@@ -364,23 +368,23 @@ while($trigger==0 || $level>0) {
 		if (/^Name=(.+)/ && $lang<1) {
 			$name=$1;
 		}
-		if (/^Name\[$lang1\]=(.+)/ && $lang<2) {
+		if (/^Name\[$lang1\]=(.+?)\s*$/ && $lang<2) {
 			$name=$1;
 			$lang=1;
 		}
-		if (/^Name\[$lang2\]=(.+)/ && $lang<3) {
+		if (/^Name\[$lang2\]=(.+?)\s*$/ && $lang<3) {
 			$name=$1;
 			$lang=2;
 		}
-		if (/^Name=\[$lang3\](.+)/ && $lang<4) {
+		if (/^Name=\[$lang3\](.+?)\s*$/ && $lang<4) {
 			$name=$1;
 			$lang=3;
 		}
-		if (/^Name=\[$lang4\](.+)/ && $lang<5) {
+		if (/^Name=\[$lang4\](.+?)\s*$/ && $lang<5) {
 			$name=$1;
 			$lang=4;
 		}
-		$icon=$1 if /^Icon=(.+)/;
+		$icon=$1 if /^Icon=(.+?)\s*$/;
 	}
 	close F_IN;
 	if($o_icons) {
@@ -503,14 +507,12 @@ if($o_promote) {
 	}
 }
 
-$level=-1;
+$level="";
 sub icewm {
 	my $no=$_[0];
 	foreach my $entry(sort keys %{$menu[$no]}) {
 		#next if $menu[$no]{$entry}[$ml]==0;
-		for(my $i=0; $i<=$level; $i++) {
-			print "	";
-		}
+		print "$level";
 		#if($menu[$no]{$entry}[$ml]<0) {
 		if($menu[$no]{$entry}[0]<0) {
 			#print "Entry: \"$entry\" \"$menu[$no]{$entry}[$mi]\" $menu[$no]{$entry}[$me]\n";
@@ -520,14 +522,11 @@ sub icewm {
 			$menu[$no]{$entry}[1]="folder" if $menu[$no]{$entry}[1] eq "";
 			#print "Menu: \"$entry\" \"$menu[$no]{$entry}[$mi]\"\n";
 			print "menu \"$entry\" \"$menu[$no]{$entry}[1]\" {\n";
-			$level++;
+			$level.="	";
 			#outgen($menu[$no]{$entry}[$ml]);
 			icewm($menu[$no]{$entry}[0]);
-			$level--;
-			for(my $i=0; $i<=$level; $i++) {
-				print "	";
-			}
-			print "}\n";
+			$level=~s/	//;
+			print "$level}\n";
 		}
 	}
 }
@@ -535,20 +534,15 @@ sub icewm {
 sub blackbox {
 	my $no=$_[0];
 	foreach my $entry(sort keys %{$menu[$no]}) {
-		for(my $i=0; $i<=$level; $i++) {
-			print "	";
-		}
+		print "$level";
 		if($menu[$no]{$entry}[0]<0) {
 			print "[exec] ($entry) {$menu[$no]{$entry}[2]}\n";
 		} else {
 			print "[submenu] ($entry)\n";
-			$level++;
+			$level.="	";
 			blackbox($menu[$no]{$entry}[0]);
-			$level--;
-			for(my $i=0; $i<=$level; $i++) {
-				print "	";
-			}
-			print "[end]\n";
+			$level=~s/	//;
+			print "$level\[end]\n";
 		}
 	}
 }
@@ -556,20 +550,15 @@ sub blackbox {
 sub wmakerold {
 	my $no=$_[0];
 	foreach my $entry(sort keys %{$menu[$no]}) {
-		for(my $i=0; $i<=$level; $i++) {
-			print "	";
-		}
+		print "$level\"$entry\" ";
 		if($menu[$no]{$entry}[0]<0) {
-			print "\"$entry\" EXEC $menu[$no]{$entry}[2]\n";
+			print "EXEC $menu[$no]{$entry}[2]\n";
 		} else {
-			print "\"$entry\" MENU\n";
-			$level++;
+			print "MENU\n";
+			$level.="	";
 			wmakerold($menu[$no]{$entry}[0]);
-			$level--;
-			for(my $i=0; $i<=$level; $i++) {
-				print "	";
-			}
-			print "\"$entry\" END\n";
+			$level=~s/	//;
+			print "$level\"$entry\" END\n";
 		}
 	}
 }
@@ -578,23 +567,15 @@ sub wmaker {
 	my $no=$_[0];
 	my $coma=$_[1];
 	foreach my $entry(sort keys %{$menu[$no]}) {
-		print "$coma\n";
-		for(my $i=0; $i<=$level; $i++) {
-			print "	";
-		}
+		print "$coma\n$level(\"$entry\"";
 		if($menu[$no]{$entry}[0]<0) {
 			$menu[$no]{$entry}[2]=~s/\"/\\\"/g;
-			print"(\"$entry\", EXEC, \"$menu[$no]{$entry}[2]\")";
+			print", EXEC, \"$menu[$no]{$entry}[2]\")";
 		} else {
-			print "(\"$entry\"";
-			$level++;
+			$level.="	";
 			wmaker($menu[$no]{$entry}[0],",");
-			$level--;
-			print "\n";
-			for(my $i=0; $i<=$level; $i++) {
-				print "	";
-			}
-			print ")";
+			$level=~s/	//;
+			print "\n$level)";
 		}
 	}
 }
@@ -602,21 +583,16 @@ sub wmaker {
 sub xfce4 {
 	my $no=$_[0];
 	foreach my $entry(sort keys %{$menu[$no]}) {
-		for(my $i=0; $i<=$level; $i++) {
-			print "	";
-		}
+		print "$level<";
 		if($menu[$no]{$entry}[0]<0) {
 			$menu[$no]{$entry}[2]=~s/\"/\\\"/g;
-			print "<app name=\"$entry\" cmd=\"$menu[$no]{$entry}[2]\"/>\n";
+			print "app name=\"$entry\" cmd=\"$menu[$no]{$entry}[2]\"/>\n";
 		} else {
-			print "<menu name=\"$entry\" visible=\"yes\">\n";
-			$level++;
+			print "menu name=\"$entry\" visible=\"yes\">\n";
+			$level.="	";
 			xfce4($menu[$no]{$entry}[0]);
-			$level--;
-			for(my $i=0; $i<=$level; $i++) {
-				print "	";
-			}
-			print "</menu>\n";
+			$level=~s/	//;
+			print "$level</menu>\n";
 		}
 	}
 }
@@ -635,9 +611,7 @@ sub afterstep {
 			close F_OUT;
 		} else {
 			mkpath("$dir/$entry",0,0700);
-			$level++;
 			afterstep($menu[$no]{$entry}[0],"$dir/$entry");
-			$level--;
 		}
 	}
 }
@@ -663,7 +637,7 @@ if($o_output eq "wmaker") {
 if($o_output eq "xfce4") {
 	print '<xfdesktop-menu>
 	<title name="Desktop Menu" visible="yes" />\n';
-	$level++;
+	$level.="	";
 	xfce4(0);
 	print "</xfdesktop-menu>\n";
 	exit;
