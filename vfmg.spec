@@ -3,12 +3,12 @@ Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
 Version:	0.9.16
-Release:	1
+Release:	2
 License:	GPL
 Group:		X11/Window Managers/Tools
 Vendor:		GoTaR <gotar@pld-linux.org>
 Source0:	http://ep09.pld-linux.org/~havner/%{name}-%{version}.tar.bz2
-# Source0-md5:	a6eb5a2c9e88eb544dedceae77df01c9
+# Source0-md5:	e932c093e6d1ec219c972f89ac9106c1
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
 Requires:	applnk >= 1.9.0
@@ -35,16 +35,28 @@ wype³niaj±cych specyfikacjê menu z freedesktop.org.
 %install
 rm -rf $RPM_BUILD_ROOT
 
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_datadir}/zsh/site-functions}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_datadir}/zsh/site-functions,%{_sysconfdir}/{rc.d/init.d,sysconfig}}
 
 install vfmg $RPM_BUILD_ROOT%{_bindir}
 install vfmg-zsh $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_vfmg
+install vfmg.init $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/vfmg
+install vfmg.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/vfmg
 
 %clean
 rm -rf $RPM_BUILD_ROOT
+
+%post
+/sbin/chkconfig --add vfmg
+
+%preun
+if [ "$1" = "0" ]; then
+        /sbin/chkconfig --del vfmg
+fi
 
 %files
 %defattr(644,root,root,755)
 %doc README vfmg.html
 %attr(755,root,root) %{_bindir}/*
+%attr(755,root,root) %{_sysconfdir}/rc.d/init.d/*
+%{_sysconfdir}/sysconfig/*
 %{_datadir}/zsh/site-functions/*
