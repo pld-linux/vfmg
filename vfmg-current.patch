@@ -1,6 +1,6 @@
-diff -ur vfmg-0.9.18/README vfmg/README
+diff -urN vfmg-0.9.18/README vfmg-current/README
 --- vfmg-0.9.18/README	2004-03-12 18:45:11.000000000 +0100
-+++ vfmg/README	2004-03-12 07:26:29.000000000 +0100
++++ vfmg-current/README	2004-03-12 07:26:29.000000000 +0100
 @@ -5,10 +5,6 @@
  - AfterStep, qvwm and xpde don't shrink icons (e.g. bigger png ones) - it looks funny;)
  
@@ -12,9 +12,9 @@ diff -ur vfmg-0.9.18/README vfmg/README
  - destination directory
  - main menu name
  - icons cache
-diff -ur vfmg-0.9.18/vfmg vfmg/vfmg
+diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
 --- vfmg-0.9.18/vfmg	2004-09-07 18:07:08.000000000 +0200
-+++ vfmg/vfmg	2004-11-27 15:42:27.000000000 +0100
++++ vfmg-current/vfmg	2004-11-27 15:42:27.000000000 +0100
 @@ -1,5 +1,5 @@
  #!/usr/bin/perl -w
 -#$Id$
@@ -347,9 +347,15 @@ diff -ur vfmg-0.9.18/vfmg vfmg/vfmg
  	enlightenment($o_strip,"index","Enlightenment");
  	exit;
  }
-diff -ur vfmg-0.9.18/vfmg.html vfmg/vfmg.html
+diff -urN vfmg-0.9.18/vfmg.cron vfmg-current/vfmg.cron
+--- vfmg-0.9.18/vfmg.cron	1970-01-01 01:00:00.000000000 +0100
++++ vfmg-current/vfmg.cron	2004-10-22 03:15:43.000000000 +0200
+@@ -0,0 +1,2 @@
++# regenerate default menus for different windowmanagers
++15 */2 * * *	root	/etc/rc.d/init.d/vfmg restart >/dev/null 2>&1
+diff -urN vfmg-0.9.18/vfmg.html vfmg-current/vfmg.html
 --- vfmg-0.9.18/vfmg.html	2004-08-01 08:13:58.000000000 +0200
-+++ vfmg/vfmg.html	2004-11-14 05:10:20.200322792 +0100
++++ vfmg-current/vfmg.html	2004-11-14 05:10:20.000000000 +0100
 @@ -4,7 +4,7 @@
  	<title>VFolders Menu Generator home page</title>
  	<meta name="author" content="gotar">
@@ -367,9 +373,9 @@ diff -ur vfmg-0.9.18/vfmg.html vfmg/vfmg.html
  <a TARGET="_blank" href="http://www.fvwm.org/">fvwm2</a>,
  <a TARGET="_blank" href="http://www.icewm.org/">icewm</a>,
  <a TARGET="_blank" href="http://www.phys.columbia.edu/~flame/olvwm.html">olvwm</a>,
-diff -ur vfmg-0.9.18/vfmg.init vfmg/vfmg.init
+diff -urN vfmg-0.9.18/vfmg.init vfmg-current/vfmg.init
 --- vfmg-0.9.18/vfmg.init	2004-07-07 15:39:20.000000000 +0200
-+++ vfmg/vfmg.init	2004-11-27 16:40:00.000000000 +0100
++++ vfmg-current/vfmg.init	2004-11-27 19:08:58.000000000 +0100
 @@ -1,41 +1,56 @@
  #!/bin/sh
 -# $Id$
@@ -405,7 +411,8 @@ diff -ur vfmg-0.9.18/vfmg.init vfmg/vfmg.init
 +			if vfmg -i -f -x -c -s fluxbox > /etc/X11/fluxbox/menu2. 2>/dev/null \
 +				&& mv /etc/X11/fluxbox/menu2. /etc/X11/fluxbox/menu2; then ok; else fail; fi
  	fi
- 	if is_yes "$XFCE4" && [ -f /etc/xfce4/menu2.xml ]; then
+-	if is_yes "$XFCE4" && [ -f /etc/xfce4/menu2.xml ]; then
++	if is_yes "$XFCE4" && [ -f /etc/xdg/xfce4/desktop/menu2.xml ]; then
  			show "Regenerating XFCE4 menu"; busy
 -			if vfmg -i -f -x -c -u -m xfce4 > /etc/xfce4/menu2.xml 2>/dev/null; then ok; else fail; fi
 +			if vfmg -f -x -c -u -m xfce4 > /etc/xdg/xfce4/desktop/menu2.xml. 2>/dev/null \
@@ -437,9 +444,9 @@ diff -ur vfmg-0.9.18/vfmg.init vfmg/vfmg.init
  	msg_usage "$0 {start|stop|restart|reload|force-reload|status}"
  	exit 3
  esac
-diff -ur vfmg-0.9.18/vfmg.sysconfig vfmg/vfmg.sysconfig
+diff -urN vfmg-0.9.18/vfmg.sysconfig vfmg-current/vfmg.sysconfig
 --- vfmg-0.9.18/vfmg.sysconfig	2004-07-06 23:28:10.000000000 +0200
-+++ vfmg/vfmg.sysconfig	2004-11-14 05:10:20.285309872 +0100
++++ vfmg-current/vfmg.sysconfig	2004-11-14 05:10:20.000000000 +0100
 @@ -3,6 +3,10 @@
  
  XFCE4="yes"
@@ -451,9 +458,3 @@ diff -ur vfmg-0.9.18/vfmg.sysconfig vfmg/vfmg.sysconfig
  
  # This must be last line !
  # vi:syntax=sh:tw=78:ts=8:sw=4
-diff -urN vfmg-0.9.18/vfmg.cron vfmg-current/vfmg.cron
---- vfmg-0.9.18/vfmg.cron	1970-01-01 01:00:00.000000000 +0100
-+++ vfmg-current/vfmg.cron	2004-10-22 03:15:43.000000000 +0200
-@@ -0,0 +1,2 @@
-+# regenerate default menus for different windowmanagers
-+15 */2 * * *	root	/etc/rc.d/init.d/vfmg restart >/dev/null 2>&1
