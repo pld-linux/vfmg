@@ -22,7 +22,7 @@ GetOptions('help'=>\$o_help,
 	);
 
 if($o_help) {
-	print "Usage:	$0 [options] icewm|blackbox
+	print "Usage:	$0 [options] icewm|blackbox|wmaker-old|wmaker
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
 	-e, --end	- echo omitted XDG file ending to stderr
@@ -33,9 +33,10 @@ if($o_help) {
 	exit;
 }
 
-die "Missing argument (icewm|blackbox)\n" unless exists $ARGV[0];
+die "Missing argument (icewm|blackbox|wmaker-old|wmaker)\n" unless exists $ARGV[0];
 $o_output=$ARGV[0];
-die "Unrecognized argument: $o_output\n" if(($o_output ne "icewm")&&($o_output ne "blackbox"));
+die "Unrecognized argument: $o_output\n" if(($o_output ne "icewm")&&($o_output ne "blackbox")
+	&&($o_output ne "wmaker-old")&&($o_output ne "wmaker"));
 
 if($o_exec) {
 	@path=split(/:+/,$ENV{'PATH'});
@@ -511,7 +512,6 @@ sub blackbox {
 		if($menu[$no]{$entry}[0]<0) {
 			print "[exec] ($entry) {$menu[$no]{$entry}[2]}\n";
 		} else {
-			$menu[$no]{$entry}[1]="folder" if $menu[$no]{$entry}[1] eq "";
 			print "[submenu] ($entry)\n";
 			$level++;
 			blackbox($menu[$no]{$entry}[0]);
@@ -524,6 +524,52 @@ sub blackbox {
 	}
 }
 
+sub wmakerold {
+	my $no=$_[0];
+	foreach my $entry(sort keys %{$menu[$no]}) {
+		for(my $i=0; $i<=$level; $i++) {
+			print "	";
+		}
+		if($menu[$no]{$entry}[0]<0) {
+			print "\"$entry\" EXEC $menu[$no]{$entry}[2]\n";
+		} else {
+			print "\"$entry\" MENU\n";
+			$level++;
+			wmakerold($menu[$no]{$entry}[0]);
+			$level--;
+			for(my $i=0; $i<=$level; $i++) {
+				print "	";
+			}
+			print "\"$entry\" END\n";
+		}
+	}
+}
+
+sub wmaker {
+	my $no=$_[0];
+	my $coma=$_[1];
+	foreach my $entry(sort keys %{$menu[$no]}) {
+		print "$coma\n";
+		for(my $i=0; $i<=$level; $i++) {
+			print "	";
+		}
+		if($menu[$no]{$entry}[0]<0) {
+			$menu[$no]{$entry}[2]=~s/\"/\\\"/g;
+			print"(\"$entry\", EXEC, \"$menu[$no]{$entry}[2]\")";
+		} else {
+			print "(\"$entry\"";
+			$level++;
+			wmaker($menu[$no]{$entry}[0],",");
+			$level--;
+			print "\n";
+			for(my $i=0; $i<=$level; $i++) {
+				print "	";
+			}
+			print ")";
+		}
+	}
+}
+
 if($o_output eq "icewm") {
 	icewm(0);
 	exit;
@@ -532,5 +578,13 @@ if($o_output eq "blackbox") {
 	print "[begin] (Blackbox)\n";
 	blackbox(0);
 	print "[end]\n";
+	exit;
+}
+if($o_output eq "wmaker-old") {
+	wmakerold(0);
+	exit;
+}
+if($o_output eq "wmaker") {
+	wmaker(0,"");
 	exit;
 }
