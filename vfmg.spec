@@ -2,15 +2,13 @@
 Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
-Version:	0.9.9
-Release:	2
+Version:	0.9.9a
+Release:	1
 License:	GPL
 Group:		X11/Window Managers/Tools
 Vendor:		GoTaR <gotar@pld-linux.org>
-Source0:	%{name}
-Source1:	%{name}-zsh
-Source2:	%{name}-README
-Source3:	%{name}.html
+Source0:	%{name}-%{version}.tar.bz2
+# Source0-md5:	2f4450437d963ecb2267c99494f2c60c
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -29,17 +27,15 @@ wkrótce) z plików desktop wype³niaj±cych specyfikacjê menu z
 freedesktop.org.
 
 %prep
-%setup -q -c -T
+%setup -q
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_datadir}/zsh/site-functions}
 
-install %{SOURCE0} $RPM_BUILD_ROOT%{_bindir}
-install %{SOURCE1} $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_vfmg
-install %{SOURCE2} README
-install %{SOURCE3} .
+install vfmg $RPM_BUILD_ROOT%{_bindir}
+install vfmg-zsh $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_vfmg
 
 %clean
 rm -rf $RPM_BUILD_ROOT
