@@ -1,7 +1,7 @@
 Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
-Version:	0.9.8
+Version:	0.9.9
 Release:	1
 License:	GPL
 Group:		X11/Window Managers/Tools
@@ -14,15 +14,16 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 VFolders Menu Generator. Generates window managers menus (for now only
-icewm, blackbox, window maker (both old and new style), xfce4, fvwm2
-and afterstep are supported, next coming soon) from desktop files
-conforming the freedesktop.org menu specification.
+icewm, blackbox, window maker (both old and new style), xfce4,
+afterstep, fvwm2 and olvwm are supported, next coming soon) from
+desktop files conforming the freedesktop.org menu specification.
 
 %description -l pl
 Generator Menu opartego na VFolders. Generuje menu zarz±dców okien
 (jak dot±d wspierane s± tylko icewm, blackbox, window maker (oba
-style, stary oraz nowy), xfce4, afterstep i fvwm2, nastêpne wkrótce) z
-plików desktop wype³niaj±cych specyfikacjê menu z freedesktop.org.
+style, stary oraz nowy), xfce4, afterstep, fvwm2 i olvwm, nastêpne
+wkrótce) z plików desktop wype³niaj±cych specyfikacjê menu z
+freedesktop.org.
 
 %prep
 %setup -c -T
