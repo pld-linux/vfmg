@@ -1,0 +1,11 @@
+--- vfmg-0.9.18/vfmg		2004-12-07 21:04:36.000000000 +0100
++++ vfmg-0.9.18-patrys/vfmg	2004-12-07 21:08:27.136014424 +0100
+@@ -186,6 +186,8 @@
+ 		my $exists=0;
+ 		foreach my $dir(@icondirs) {
+ 			if(-f "$dir$icon") {
++			} elsif(-f "$dir$icon.svg") {
++				$icon.=".svg";
+ 			} elsif(-f "$dir$icon.xpm") {
+ 				$icon.=".xpm";
+ 			} elsif(-f "$dir$icon.png") {
