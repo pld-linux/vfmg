@@ -502,4 +502,35 @@ sub icewm {
 	}
 }
 
-icewm(0) if $o_output eq "icewm";
+sub blackbox {
+	my $no=$_[0];
+	foreach my $entry(sort keys %{$menu[$no]}) {
+		for(my $i=0; $i<=$level; $i++) {
+			print "	";
+		}
+		if($menu[$no]{$entry}[0]<0) {
+			print "[exec] ($entry) {$menu[$no]{$entry}[2]}\n";
+		} else {
+			$menu[$no]{$entry}[1]="folder" if $menu[$no]{$entry}[1] eq "";
+			print "[submenu] ($entry)\n";
+			$level++;
+			blackbox($menu[$no]{$entry}[0]);
+			$level--;
+			for(my $i=0; $i<=$level; $i++) {
+				print "	";
+			}
+			print "[end]\n";
+		}
+	}
+}
+
+if($o_output eq "icewm") {
+	icewm(0);
+	exit;
+}
+if($o_output eq "blackbox") {
+	print "[begin] (Blackbox)\n";
+	blackbox(0);
+	print "[end]\n";
+	exit;
+}
