@@ -2,13 +2,13 @@
 Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
-Version:	0.9.14
+Version:	0.9.15
 Release:	1
 License:	GPL
 Group:		X11/Window Managers/Tools
 Vendor:		GoTaR <gotar@pld-linux.org>
 Source0:	%{name}-%{version}.tar.bz2
-# Source0-md5:	486c7f96e4c7a0a25ec518a30ce2385b
+# Source0-md5:	ba13c5c5c2516e0b58257c491c69a568
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
 Requires:	applnk >= 1.6.2
@@ -18,15 +18,16 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %description
 VFolders Menu Generator. Generates window managers menus (for now only
 icewm, blackbox, window maker (both old and new style), xfce4, aewm,
-afterstep, fvwm2, olvwm and qvwm are supported, next coming soon) from
-desktop files conforming the freedesktop.org menu specification.
+afterstep, fvwm2, olvwm, qvwm, enlightenment and fluxbox are
+supported, next coming soon) from desktop files conforming the
+freedesktop.org menu specification.
 
 %description -l pl
 Generator Menu opartego na VFolders. Generuje menu zarz±dców okien
 (jak dot±d wspierane s± tylko icewm, blackbox, window maker (oba
-style, stary oraz nowy), xfce4, aewm, afterstep, fvwm2, olvwm i qvwm,
-nastêpne wkrótce) z plików desktop wype³niaj±cych specyfikacjê menu z
-freedesktop.org.
+style, stary oraz nowy), xfce4, aewm, afterstep, fvwm2, olvwm, qvwm,
+enlightenment i fluxbox, nastêpne wkrótce) z plików desktop
+wype³niaj±cych specyfikacjê menu z freedesktop.org.
 
 %prep
 %setup -q
