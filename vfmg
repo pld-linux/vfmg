@@ -10,6 +10,7 @@ my $o_end=0;
 my $o_icons=0;
 my $o_exec=0;
 my $o_clear=0;
+my $o_promote=0;
 my $o_output="";
 my @path;
 
@@ -18,7 +19,8 @@ GetOptions('help'=>\$o_help,
 	'end|e'=>\$o_end,
 	'icons'=>\$o_icons,
 	'exec|x'=>\$o_exec,
-	'clear'=>\$o_clear
+	'clear'=>\$o_clear,
+	'promote'=>\$o_promote
 	);
 
 if($o_help) {
@@ -29,6 +31,7 @@ if($o_help) {
 	-i, --icons	- check for icons existence
 	-x, --exec	- check for binaries existence
 	-c, --clear	- remove empty menus
+	-p, --promote	- promote submenus with single entry
 	";
 	exit;
 }
@@ -112,11 +115,9 @@ sub wanted {
 	if($o_icons) {
 		my $exists=0;
 		foreach my $dir("$ENV{'HOME'}/.icons","/usr/share/icons","/usr/share/pixmaps") {
-			$exists=1 if((-f "$dir/$icon")||(-f "$dir/$icon.xpm"));
-			if(-f "$dir/$icon.png") {
-				$icon.=".png";
-				$exists=1;
-			}
+			$icon.=".xpm" if -f "$dir/$icon.xpm";
+			$icon.=".png" if -f "$dir/$icon.png";
+			$exists=1 if -f "$dir/$icon";
 		}
 		$icon="" unless $exists;
 	}
@@ -385,11 +386,9 @@ while($trigger==0 || $level>0) {
 	if($o_icons) {
 		my $exists=0;
 		foreach my $dir("$ENV{'HOME'}/.icons","/usr/share/icons","/usr/share/pixmaps") {
-			$exists=1 if((-f "$dir/$icon")||(-f "$dir/$icon.xpm"));
-			if(-f "$dir/$icon.png") {
-				$icon.=".png";
-				$exists=1;
-			}
+			$icon.=".xpm" if -f "$dir/$icon.xpm";
+			$icon.=".png" if -f "$dir/$icon.png";
+			$exists=1 if -f "$dir/$icon";
 		}
 		$icon="" unless $exists;
 	}
@@ -455,20 +454,49 @@ while($trigger==0 || $level>0) {
 
 warn "Omitted ending: $file\n" if(($file ne "")&& $o_end);
 
-if($o_clear) {
+if(($o_clear)&&(!$o_promote)) {
 	my @empty;
 	for(my $i=$#menu; $i>=0; $i--) {
 		$empty[$i]=1;
 		foreach my $entry(keys %{$menu[$i]}) {
 			#if($menu[$i]{$entry}[$ml]<0) {
-			if($menu[$i]{$entry}[0]<0) {
+			$mno=$menu[$i]{$entry}[0];
+			if($mno<0) {
 				$empty[$i]=0;
 			} else {
 				#if($empty[$menu[$i]{$entry}[$ml]]) {
-				if($empty[$menu[$i]{$entry}[0]]) {
+				if($empty[$mno]) {
 					delete($menu[$i]{$entry});
 				} else {
 					$empty[$i]=0;
+				}
+			}
+		}
+	}
+}
+
+if($o_promote) {
+	my @count;
+	for(my $i=$#menu; $i>=0; $i--) {
+		$count[$i]=0;
+		foreach my $entry(keys %{$menu[$i]}) {
+			#if($menu[$i]{$entry}[$ml]<0) {
+			$mno=$menu[$i]{$entry}[0];
+			if($mno<0) {
+				$count[$i]++;
+			} else {
+				#if($empty[$menu[$i]{$entry}[$ml]]) {
+				if($count[$mno]==0) {
+					delete($menu[$i]{$entry});
+				} else {
+					if($count[$mno]==1) {
+						foreach my $name(keys %{$menu[$mno]}) {
+							$menu[$i]{$name}=[-1,"$menu[$mno]{$name}[1]","$menu[$mno]{$name}[2]"];
+						}
+						delete($menu[$i]{$entry});
+					} else {
+						$count[$i]++;
+					}
 				}
 			}
 		}

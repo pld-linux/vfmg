@@ -5,10 +5,8 @@ ISSUES:
 - AfterStep doesn't shrink icons (e.g. bigger png ones) - it looks funny;)
 
 TODO:
-- promotions
 - moving submenus before programs within menu
 - stripping 1st level menu
-- adding .xpm extension the same way, as .png is
 - old style afterstep menu
 - locate the slowest part
 - make use of XDG_{CONFIG,DATA}_{DIRS,HOME} env. variables
