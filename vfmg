@@ -24,7 +24,7 @@ GetOptions('help'=>\$o_help,
 	);
 
 if($o_help) {
-	print "Usage:	$0 [options] afterstep|blackbox|icewm|wmaker|wmaker-old|xfce4
+	print "Usage:	$0 [options] afterstep|blackbox|fluxbox|icewm|wmaker|wmaker-old|xfce4
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
 	-e, --end	- echo omitted XDG file ending to stderr
@@ -36,11 +36,12 @@ if($o_help) {
 	exit;
 }
 
-die "Missing argument (afterstep|blackbox|icewm|wmaker|wmaker-old|xfce4)\n" unless exists $ARGV[0];
+die "Missing argument (afterstep|blackbox|fluxbox|icewm|wmaker|wmaker-old|xfce4)\n"
+	unless exists $ARGV[0];
 $o_output=$ARGV[0];
-die "Unrecognized argument: $o_output\n" if(($o_output ne "blackbox")&&($o_output ne "icewm")
-	&&($o_output ne "wmaker")&&($o_output ne "wmaker-old")&&($o_output ne "xfce4")
-	&&($o_output ne "afterstep"));
+die "Unrecognized argument: $o_output\n"
+	unless $o_output=~/^(afterstep|blackbox|fluxbox|icewm|wmaker|wmaker-old|xfce4)$/;
+
 
 if($o_exec) {
 	@path=split(/:+/,$ENV{'PATH'});
@@ -656,5 +657,11 @@ if($o_output eq "afterstep") {
 		mkpath("$dir",0,0700);
 	}
 	afterstep(0,$dir);
+	exit;
+}
+if($o_output eq "fluxbox") {	# This is the same as blackbox (I hope so)
+	print "[begin] (Fluxbox)\n";
+	blackbox(0);
+	print "[end]\n";
 	exit;
 }
