@@ -22,7 +22,7 @@ GetOptions('help'=>\$o_help,
 	);
 
 if($o_help) {
-	print "Usage:	$0 [options] blackbox|icewm|wmaker|wmaker-old|xfce4
+	print "Usage:	$0 [options] afterstep|blackbox|icewm|wmaker|wmaker-old|xfce4
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
 	-e, --end	- echo omitted XDG file ending to stderr
@@ -33,10 +33,11 @@ if($o_help) {
 	exit;
 }
 
-die "Missing argument (blackbox|icewm|wmaker|wmaker-old|xfce4)\n" unless exists $ARGV[0];
+die "Missing argument (afterstep|blackbox|icewm|wmaker|wmaker-old|xfce4)\n" unless exists $ARGV[0];
 $o_output=$ARGV[0];
 die "Unrecognized argument: $o_output\n" if(($o_output ne "blackbox")&&($o_output ne "icewm")
-	&&($o_output ne "wmaker")&&($o_output ne "wmaker-old")&&($o_output ne "xfce4"));
+	&&($o_output ne "wmaker")&&($o_output ne "wmaker-old")&&($o_output ne "xfce4")
+	&&($o_output ne "afterstep"));
 
 if($o_exec) {
 	@path=split(/:+/,$ENV{'PATH'});
@@ -592,6 +593,27 @@ sub xfce4 {
 	}
 }
 
+sub afterstep {
+	my $no=$_[0];
+	my $dir=$_[1];
+	foreach my $entry(sort keys %{$menu[$no]}) {
+		if($menu[$no]{$entry}[0]<0) {
+			$file=$entry;
+			$file=~s/\s+/_/g;
+			open F_OUT, ">> $dir/$file" or warn "$dir/$file: $!\n";
+			print F_OUT "Exec \"$entry\" exec $menu[$no]{$entry}[2]\n";
+			print F_OUT "MiniPixmap \"/usr/share/pixmaps/$menu[$no]{$entry}[1]\"\n";
+			#print F_OUT "MiniPixmap \"mini-app.xpm\"\n";
+			close F_OUT;
+		} else {
+			mkpath("$dir/$entry",0,0700);
+			$level++;
+			afterstep($menu[$no]{$entry}[0],"$dir/$entry");
+			$level--;
+		}
+	}
+}
+
 if($o_output eq "icewm") {
 	icewm(0);
 	exit;
@@ -616,5 +638,21 @@ if($o_output eq "xfce4") {
 	$level++;
 	xfce4(0);
 	print "</xfdesktop-menu>\n";
+	exit;
+}
+if($o_output eq "afterstep") {
+	use File::Path;
+	my $dir="$ENV{'HOME'}/GNUstep/Library/AfterStep/start";
+	if((-d "$dir")||(-f "$dir")) {
+		rmtree("$dir.old",0,0);
+		rename("$dir","$dir.old");
+		mkpath("$dir",0,0700);
+		#open F_OUT, ">> $dir/\.include" or warn "$dir/.include: $!\n";
+		#print F_OUT "keepname\ninclude \"../start.old\"\n";
+		#close F_OUT;
+	} else {
+		mkpath("$dir",0,0700);
+	}
+	afterstep(0,$dir);
 	exit;
 }
