@@ -10,6 +10,7 @@ my $o_end=0;
 my $o_icons=0;
 my $o_exec=0;
 my $o_clear=0;
+my $o_output="";
 my @path;
 
 GetOptions('help'=>\$o_help,
@@ -21,7 +22,7 @@ GetOptions('help'=>\$o_help,
 	);
 
 if($o_help) {
-	print "Usage:
+	print "Usage:	$0 [options] icewm|blackbox
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
 	-e, --end	- echo omitted XDG file ending to stderr
@@ -31,6 +32,10 @@ if($o_help) {
 	";
 	exit;
 }
+
+die "Missing argument (icewm|blackbox)\n" unless exists $ARGV[0];
+$o_output=$ARGV[0];
+die "Unrecognized argument: $o_output\n" if(($o_output ne "icewm")&&($o_output ne "blackbox"));
 
 if($o_exec) {
 	@path=split(/:+/,$ENV{'PATH'});
@@ -105,7 +110,11 @@ sub wanted {
 	if($o_icons) {
 		my $exists=0;
 		foreach my $dir("$ENV{'HOME'}/.icons","/usr/share/icons","/usr/share/pixmaps") {
-			$exists=1 if((-f "$dir/$icon")||(-f "$dir/$icon.xpm"))
+			$exists=1 if((-f "$dir/$icon")||(-f "$dir/$icon.xpm"));
+			if(-f "$dir/$icon.png") {
+				$icon.=".png";
+				$exists=1;
+			}
 		}
 		$icon="" unless $exists;
 	}
@@ -120,7 +129,8 @@ sub wanted {
 foreach my $category(sort keys %apps) {
 	print "$category	\n";
 	foreach my $name(sort keys %{$apps{$category}}) {
-		printf "	%s|%s|%s\n",$name,$apps{$category}{$name}[$ai],$apps{$category}{$name}[$ae];
+		#printf "	%s|%s|%s\n",$name,$apps{$category}{$name}[$ai],$apps{$category}{$name}[$ae];
+		printf "	%s|%s|%s\n",$name,$apps{$category}{$name}[1],$apps{$category}{$name}[0];
 	}
 	print "\n";
 }
@@ -191,7 +201,7 @@ sub cand {
 	foreach my $name(keys %{$apps{$dir}}) {
 		#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
 		#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
-		$iapps{$dir}{$name}=[$apps{$dir}{$name}[$ae],$apps{$dir}{$name}[$ai]];
+		$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
 	}
 	}
 	while (1) {
@@ -234,7 +244,7 @@ sub cor {
 			foreach my $name(keys %{$apps{$dir}}) {
 				#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
 				#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
-				$iapps{$dir}{$name}=[$apps{$dir}{$name}[$ae],$apps{$dir}{$name}[$ai]];
+				$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
 			}
 			gettag();	# must be </category> else GIGO and we don't care
 			next;
@@ -248,7 +258,7 @@ sub cor {
 			foreach my $name(keys %{$tmpapps{$cat}}) {
 				#$iapps{$cat}{$name}[$ai]=$tmpapps{$cat}{$name}[$ai];
 				#$iapps{$cat}{$name}[$ae]=$tmpapps{$cat}{$name}[$ae];
-				$iapps{$cat}{$name}=[$tmpapps{$cat}{$name}[$ae],$tmpapps{$cat}{$name}[$ai]];
+				$iapps{$cat}{$name}=[$tmpapps{$cat}{$name}[0],$tmpapps{$cat}{$name}[1]];
 			}
 			}
 			next;
@@ -264,7 +274,7 @@ sub cnot {
 	foreach my $name(keys %{$apps{$dir}}) {
 		#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
 		#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
-		$iapps{$dir}{$name}=[$apps{$dir}{$name}[$ae],$apps{$dir}{$name}[$ai]];
+		$iapps{$dir}{$name}=[$apps{$dir}{$name}[0],$apps{$dir}{$name}[1]];
 	}
 	}
 	while (1) {
@@ -300,12 +310,7 @@ sub cnot {
 	%iapps;
 }
 
-$#menu++;	# let's start from index 1
-		# this index is a pointer to menu struct
-		# (entry in $menu[] table) via $mno
-		# 0 means empty, so it's ommited
-		# twill be made choosable
-
+$#menu++;
 while($trigger==0 || $level>0) {
 	$tag=gettag();
 	if($tag=~/^menu$/i) {
@@ -323,12 +328,13 @@ while($trigger==0 || $level>0) {
 		my $i=$menustack[$#menustack];
 		if(exists $directory[$level]) {
 			foreach my $entry(keys %{$menu[$i]}) {
-				delete($menu[$i]{$entry}) if $menu[$i]{$entry}[$ml]==$mno;
+				#delete($menu[$i]{$entry}) if $menu[$i]{$entry}[$ml]==$mno;
+				delete($menu[$i]{$entry}) if $menu[$i]{$entry}[0]==$mno;
 			}
 			#$name=$directory[$level][$dn];
 			#$menu[$i]{$name}[$ml]=$mno;
 			#$menu[$i]{$name}[$mi]=$directory[$level][$di];
-			$menu[$i]{$directory[$level][$dn]}=[$mno,$directory[$level][$di]];
+			$menu[$i]{$directory[$level][0]}=[$mno,$directory[$level][1]];
 			delete($directory[$level]);
 		}
 		#}
@@ -374,6 +380,17 @@ while($trigger==0 || $level>0) {
 		$icon=$1 if /^Icon=(.+)/;
 	}
 	close F_IN;
+	if($o_icons) {
+		my $exists=0;
+		foreach my $dir("$ENV{'HOME'}/.icons","/usr/share/icons","/usr/share/pixmaps") {
+			$exists=1 if((-f "$dir/$icon")||(-f "$dir/$icon.xpm"));
+			if(-f "$dir/$icon.png") {
+				$icon.=".png";
+				$exists=1;
+			}
+		}
+		$icon="" unless $exists;
+	}
 		if($name ne "") {
 			#$directory[$level][$dn]=$name;
 			#$directory[$level][$di]=$icon;
@@ -399,7 +416,7 @@ while($trigger==0 || $level>0) {
 			#$menu[$mno]{$name}[$ml]=-1;
 			#$menu[$mno]{$name}[$mi]=$tmpapps{$dir}{$name}[$ai];
 			#$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
-			$menu[$mno]{$name}=[-1,$tmpapps{$dir}{$name}[$ai],$tmpapps{$dir}{$name}[$ae]];
+			$menu[$mno]{$name}=[-1,$tmpapps{$dir}{$name}[1],$tmpapps{$dir}{$name}[0]];
 		}
 		}
 		next;
@@ -410,7 +427,7 @@ while($trigger==0 || $level>0) {
 			#$menu[$mno]{$name}[$ml]=-1;
 			#$menu[$mno]{$name}[$mi]=$apps{$dir}{$name}[$ai];
 			#$menu[$mno]{$name}[$me]=$apps{$dir}{$name}[$ae];
-			$menu[$mno]{$name}=[-1,$apps{$dir}{$name}[$ai],$apps{$dir}{$name}[$ae]];
+			$menu[$mno]{$name}=[-1,$apps{$dir}{$name}[1],$apps{$dir}{$name}[0]];
 		}
 		gettag();	# must be </category> else GIGO and we don't care
 		next;
@@ -441,10 +458,12 @@ if($o_clear) {
 	for(my $i=$#menu; $i>=0; $i--) {
 		$empty[$i]=1;
 		foreach my $entry(keys %{$menu[$i]}) {
-			if($menu[$i]{$entry}[$ml]<0) {
+			#if($menu[$i]{$entry}[$ml]<0) {
+			if($menu[$i]{$entry}[0]<0) {
 				$empty[$i]=0;
 			} else {
-				if($empty[$menu[$i]{$entry}[$ml]]) {
+				#if($empty[$menu[$i]{$entry}[$ml]]) {
+				if($empty[$menu[$i]{$entry}[0]]) {
 					delete($menu[$i]{$entry});
 				} else {
 					$empty[$i]=0;
@@ -455,22 +474,32 @@ if($o_clear) {
 }
 
 $level=-1;
-sub outgen {
+sub icewm {
 	my $no=$_[0];
 	foreach my $entry(sort keys %{$menu[$no]}) {
 		#next if $menu[$no]{$entry}[$ml]==0;
 		for(my $i=0; $i<=$level; $i++) {
 			print "	";
 		}
-		if($menu[$no]{$entry}[$ml]<0) {
-			print "Entry: \"$entry\" \"$menu[$no]{$entry}[$mi]\" $menu[$no]{$entry}[$me]\n";
+		#if($menu[$no]{$entry}[$ml]<0) {
+		if($menu[$no]{$entry}[0]<0) {
+			#print "Entry: \"$entry\" \"$menu[$no]{$entry}[$mi]\" $menu[$no]{$entry}[$me]\n";
+			print "prog \"$entry\" \"$menu[$no]{$entry}[1]\" $menu[$no]{$entry}[2]\n";
 		} else {
-			print "Menu: \"$entry\" \"$menu[$no]{$entry}[$mi]\"\n";
+			#$menu[$no]{$entry}[$mi]="folder" if $menu[$no]{$entry}[$mi] eq "";
+			$menu[$no]{$entry}[1]="folder" if $menu[$no]{$entry}[1] eq "";
+			#print "Menu: \"$entry\" \"$menu[$no]{$entry}[$mi]\"\n";
+			print "menu \"$entry\" \"$menu[$no]{$entry}[1]\" {\n";
 			$level++;
-			outgen($menu[$no]{$entry}[$ml]);
+			#outgen($menu[$no]{$entry}[$ml]);
+			icewm($menu[$no]{$entry}[0]);
 			$level--;
+			for(my $i=0; $i<=$level; $i++) {
+				print "	";
+			}
+			print "}\n";
 		}
 	}
 }
 
-outgen(0);
+icewm(0) if $o_output eq "icewm";
