@@ -34,13 +34,12 @@ wype³niaj±cych specyfikacjê menu z freedesktop.org.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_datadir}/zsh/site-functions,%{_sysconfdir}/{rc.d/init.d,sysconfig}}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_datadir}/zsh/site-functions,/etc/{rc.d/init.d,sysconfig}}
 
 install vfmg $RPM_BUILD_ROOT%{_bindir}
 install vfmg-zsh $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_vfmg
-install vfmg.init $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/vfmg
-install vfmg.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/vfmg
+install vfmg.init $RPM_BUILD_ROOT/etc/rc.d/init.d/vfmg
+install vfmg.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/vfmg
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -57,6 +56,6 @@ fi
 %defattr(644,root,root,755)
 %doc README vfmg.html
 %attr(755,root,root) %{_bindir}/*
-%attr(754,root,root) %{_sysconfdir}/rc.d/init.d/vfmg
-%{_sysconfdir}/sysconfig/*
+%attr(754,root,root) /etc/rc.d/init.d/vfmg
+%config(noreplace) %verify(not size mtime md5) /etc/sysconfig/vfmg
 %{_datadir}/zsh/site-functions/*
