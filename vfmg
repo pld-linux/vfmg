@@ -457,10 +457,10 @@ while($trigger==0 || $level>0) {
 	if(($tag=~/^\/(name|directory|and|or|not|category|mergefile)$/i)&& $include) {
 		warn "warning: XDG file corrupted!\n" if $o_verbose;
 	}
-	warn "Omitted tag: $tag\n" if ($o_tags && $o_verbose);
+	warn "Omitted tag: $tag\n" if $o_tags;
 }
 
-warn "Omitted ending: $file\n" if(($file ne "")&& $o_end && $o_verbose);
+warn "Omitted ending: $file\n" if(($file ne "")&& $o_end);
 
 if(($o_clear)&&(!$o_promote)) {
 	my @empty;
