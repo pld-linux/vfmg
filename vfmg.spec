@@ -57,6 +57,6 @@ fi
 %defattr(644,root,root,755)
 %doc README vfmg.html
 %attr(755,root,root) %{_bindir}/*
-%attr(755,root,root) %{_sysconfdir}/rc.d/init.d/*
+%attr(754,root,root) %{_sysconfdir}/rc.d/init.d/vfmg
 %{_sysconfdir}/sysconfig/*
 %{_datadir}/zsh/site-functions/*
