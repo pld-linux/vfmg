@@ -1,0 +1,12 @@
+#compdef vfmg
+
+_arguments \
+	':Output:(afterstep blackbox fluxbox icewm wmaker wmaker-old xfce4)' \
+	'(-h --help)'{-h,--help}'[print help]' \
+	'(-t --tags)'{-t,--tags}'[echo omitted tags to stderr]' \
+	'(-e --end)'{-e,--end}'[echo omitted XDG file ending to stderr]' \
+	'(-i --icons)'{-i,--icons}'[check for icons existence]' \
+	'(-x --exec)'{-x,--exec}'[check for binaries existence]' \
+	'(-c --clear)'{-c,--clear}'[remove empty menus]' \
+	'(-p --promote -c --clear)'{-p,--promote}'[promote submenus with single entry]' \
+	'(-v --verbose)'{-v,--verbose}'[verbose output]'
