@@ -31,7 +31,7 @@
  	foreach my $entry(keys %{$menu[$no]}) {
  		$name=$entry;
  		if($menu[$no]{$entry}[0]<0) {
-@@ -740,6 +741,39 @@
+@@ -740,6 +741,41 @@
  	}
  }
  
@@ -62,7 +62,9 @@
 +		} else { 
 +			$name=substr($entry,1);
 +			$name=~s|/||g;
-+			print "\tPopup \"$name\"\t$file.$name\n";
++			my $menutitle=$name;
++			$name=~s/\s+/_/g;
++			print "\tPopup \"$menutitle\"\t$file.$name\n";
 +		}
 +	}
 +	print "EndPopup\n\n";
@@ -71,7 +73,7 @@
  sub fvwm2 {
  	my $no=$_[0];
  	my $file;
-@@ -965,6 +999,10 @@
+@@ -965,6 +1001,10 @@
  	afterstep($o_strip,$dir);
  	exit;
  }
