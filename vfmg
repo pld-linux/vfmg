@@ -52,8 +52,8 @@ sub wanted {
 			$name=$1;
 			$lang=4;
 		}
-		$exec=$1 if /^Exec=(.+)/;
 		$icon=$1 if /^Icon=(.+)/;
+		$exec=$1 if /^Exec=(.+)/;
 		$cats=$1 if /^Categories=(.+)/;
 		$term=1 if /^Terminal=1/;
 	}
@@ -162,17 +162,11 @@ sub cand {
 			&gettag;	# must be </category> else GIGO and we don't care
 			next;
 		}
-		if($tag=~/^and$/i) {
-			my %tmpapps=&cand;
-			foreach my $cat (keys %iapps) {
-			foreach my $name(keys %{$iapps{$cat}}) {
-				delete($iapps{$cat}{$name}) unless exists $tmpapps{$cat}{$name};
-			}
-			}
-			next;
-		}
-		if($tag=~/^or$/i) {
-			my %tmpapps=&cor;
+		if($tag=~/^(and|or|not)$/i) {
+			my %tmpapps;
+			%tmpapps=&cand if $tag=~/^and$/i;
+			%tmpapps=&cor if $tag=~/^or$/i;
+#			%tmpapps=&cnot if $tag=~/^not$/i;
 			foreach my $cat (keys %iapps) {
 			foreach my $name(keys %{$iapps{$cat}}) {
 				delete($iapps{$cat}{$name}) unless exists $tmpapps{$cat}{$name};
@@ -197,22 +191,15 @@ sub cor {
 			}
 			next;
 		}
-		if($tag=~/^and$/i) {
-			my %tmpapps=&cand;
-			foreach my $dir (keys %tmpapps) {
-			foreach my $name(keys %{$tmpapps{$dir}}) {
-				$iapps{$dir}{$name}[$ai]=$tmpapps{$dir}{$name}[$ai];
-				$iapps{$dir}{$name}[$ae]=$tmpapps{$dir}{$name}[$ae];
-			}
-			}
-			next;
-		}
-		if($tag=~/^or$/i) {
-			my %tmpapps=&cor;
-			foreach my $dir (keys %tmpapps) {
-			foreach my $name(keys %{$tmpapps{$dir}}) {
-				$iapps{$dir}{$name}[$ai]=$tmpapps{$dir}{$name}[$ai];
-				$iapps{$dir}{$name}[$ae]=$tmpapps{$dir}{$name}[$ae];
+		if($tag=~/^(and|or|not)$/i) {
+			my %tmpapps;
+			%tmpapps=&cand if $tag=~/^and$/i;
+			%tmpapps=&cor if $tag=~/^or$/i;
+			%tmpapps=&cnot if $tag=~/^not$/i;
+			foreach my $cat (keys %tmpapps) {
+			foreach my $name(keys %{$tmpapps{$cat}}) {
+				$iapps{$cat}{$name}[$ai]=$tmpapps{$cat}{$name}[$ai];
+				$iapps{$cat}{$name}[$ae]=$tmpapps{$cat}{$name}[$ae];
 			}
 			}
 			next;
@@ -263,14 +250,7 @@ while($trigger==0 || $level>0) {
 	if($tag=~/^name$/i) {
 		$name=&getname;
 		$menu[$menustack[$#menustack]]{$name}[$ml]=$mno;
-		#$menu[$#menu]{$name}[$ml]=$level;
-#		$menu[$#menu+1][$ml]=$level;
-#		$menu[$#menu][$mn]=$name;
 		&gettag;	# must be </name> else GIGO and we don't care
-		next;
-	}
-	if($tag=~/^\/name$/i) {
-		# we shouldn't be here!
 		next;
 	}
 	if($tag=~/^directory$/i) {
@@ -307,21 +287,18 @@ while($trigger==0 || $level>0) {
 		&gettag;	# must be </directory> else GIGO and we don't care
 		next;
 	}
-	if($tag=~/^\/directory$/i) {
-		# we shouldn't be here!
-		next;
-	}
 	if($tag=~/^include$/i) {
 		$include=1;
-		%tmpapps=();
 		next;
 	}
 	if($tag=~/^\/include$/i) {
 		$include=0;
 		next;
 	}
-	if(($tag=~/^and$/i)&& $include) {
-		%tmpapps=&cand;
+	if(($tag=~/^(and|or|not)$/i)&& $include) {
+		%tmpapps=&cand if $tag=~/^and$/i;
+		%tmpapps=&cor if $tag=~/^or$/i;
+		%tmpapps=&cnot if $tag=~/^not$/i;
 		foreach my $dir (keys %tmpapps) {
 		foreach my $name(keys %{$tmpapps{$dir}}) {
 			$menu[$mno]{$name}[$ml]=-1;
@@ -329,40 +306,6 @@ while($trigger==0 || $level>0) {
 			$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
 		}
 		}
-		next;
-	}
-	if(($tag=~/^\/and$/i)&& $include) {
-		# we shouldn't be here!
-		next;
-	}
-	if(($tag=~/^or$/i)&& $include) {
-		%tmpapps=&cor;
-		foreach my $dir (keys %tmpapps) {
-		foreach my $name(keys %{$tmpapps{$dir}}) {
-			$menu[$mno]{$name}[$ml]=-1;
-			$menu[$mno]{$name}[$mi]=$tmpapps{$dir}{$name}[$ai];
-			$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
-		}
-		}
-		next;
-	}
-	if(($tag=~/^\/or$/i)&& $include) {
-		# we shouldn't be here!
-		next;
-	}
-	if(($tag=~/^not$/i)&& $include) {
-		%tmpapps=&cnot;
-		foreach my $dir (keys %tmpapps) {
-		foreach my $name(keys %{$tmpapps{$dir}}) {
-			$menu[$mno]{$name}[$ml]=-1;
-			$menu[$mno]{$name}[$mi]=$tmpapps{$dir}{$name}[$ai];
-			$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
-		}
-		}
-		next;
-	}
-	if(($tag=~/^\/not$/i)&& $include) {
-		# we shouldn't be here!
 		next;
 	}
 	if(($tag=~/^category$/i)&& $include) {
@@ -373,10 +316,6 @@ while($trigger==0 || $level>0) {
 			$menu[$mno]{$name}[$me]=$apps{$dir}{$name}[$ae];
 		}
 		&gettag;	# must be </category> else GIGO and we don't care
-		next;
-	}
-	if(($tag=~/^\/category$/i)&& $include) {
-		# we shouldn't be here!
 		next;
 	}
 	if($tag=~/^mergefile$/i) {
@@ -392,9 +331,8 @@ while($trigger==0 || $level>0) {
 		$file=$tmpfile.$file;
 		next;
 	}
-	if($tag=~/^\/mergefile$/i) {
-		# we shouldn't be here!
-		next;
+	if(($tag=~/^\/(name|directory|and|or|not|category|mergefile)$/i)&& $include) {
+		print "warning: XDG file corrupted!\n";
 	}
 	# print "$level: $tag\n";
 }
