@@ -19,9 +19,8 @@ $lang1=~s/_.*//;
 # read desktop entries TODO: DESKTOP_FILE_PATH
 
 my %apps;
-
-my $ae=1;	# application exec
-my $ai=2;	# application icon
+	my $ae=1;	# application exec
+	my $ai=2;	# application icon
 find(\&wanted,'/usr/share/applications/');
 
 sub wanted {
@@ -133,22 +132,97 @@ my $level=0;
 my $mno=0;	# menu number
 my $trigger=0;
 my $tag;
-my @name;
+my $name;
 my $dir;
 my @directory;
 	my $dn=0;	# directory name
 	my $di=1;	# directory icon
-my @include;
-#my %tmpapps;
+my $include;
+my %tmpapps;
 my @menustack;
 
 sub cand {
+	my %iapps;	# internal applications list
+	foreach my $dir (keys %apps) {
+	foreach my $name(sort keys %{$apps{$dir}}) {
+		$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
+		$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+	}
+	}
+	while (1) {
+		$tag=&gettag;
+		last if($tag=~/^\/and$/i);
+		if($tag=~/^category$/i) {
+			$dir=&getname;
+			foreach my $cat (keys %iapps) {
+			foreach my $name(keys %{$iapps{$cat}}) {
+				delete($iapps{$cat}{$name}) unless exists $iapps{$dir}{$name};
+			}
+			}
+			&gettag;	# must be </category> else GIGO and we don't care
+			next;
+		}
+		if($tag=~/^and$/i) {
+			my %tmpapps=&cand;
+			foreach my $cat (keys %iapps) {
+			foreach my $name(keys %{$iapps{$cat}}) {
+				delete($iapps{$cat}{$name}) unless exists $tmpapps{$cat}{$name};
+			}
+			}
+			next;
+		}
+		if($tag=~/^or$/i) {
+			my %tmpapps=&cor;
+			foreach my $cat (keys %iapps) {
+			foreach my $name(keys %{$iapps{$cat}}) {
+				delete($iapps{$cat}{$name}) unless exists $tmpapps{$cat}{$name};
+			}
+			}
+			next;
+		}
+	}
+	%iapps;
 }
 
 sub cor {
+	my %iapps;	# internal applications list
+	while (1) {
+		$tag=&gettag;
+		last if($tag=~/^\/or$/i);
+		if($tag=~/^category$/i) {
+			$dir=&getname;
+			foreach my $name(keys %{$apps{$dir}}) {
+				$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
+				$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+			}
+			next;
+		}
+		if($tag=~/^and$/i) {
+			my %tmpapps=&cand;
+			foreach my $dir (keys %tmpapps) {
+			foreach my $name(keys %{$tmpapps{$dir}}) {
+				$iapps{$dir}{$name}[$ai]=$tmpapps{$dir}{$name}[$ai];
+				$iapps{$dir}{$name}[$ae]=$tmpapps{$dir}{$name}[$ae];
+			}
+			}
+			next;
+		}
+		if($tag=~/^or$/i) {
+			my %tmpapps=&cor;
+			foreach my $dir (keys %tmpapps) {
+			foreach my $name(keys %{$tmpapps{$dir}}) {
+				$iapps{$dir}{$name}[$ai]=$tmpapps{$dir}{$name}[$ai];
+				$iapps{$dir}{$name}[$ae]=$tmpapps{$dir}{$name}[$ae];
+			}
+			}
+			next;
+		}
+	}
+	%iapps;
 }
 
 sub cnot {
+	$tag=&gettag;
 }
 
 $#menu++;	# let's start from index 1
@@ -164,8 +238,8 @@ while($trigger==0 || $level>0) {
 		$#menu++;
 		$menustack[$#menustack+1]=$mno;
 		$mno=$#menu;
-		#$name[$level]="";
-		#$include[$level]=0;
+		$name="";
+		$include=0;
 		$trigger=1;
 		next;
 	}
@@ -187,12 +261,12 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if($tag=~/^name$/i) {
-		$name[$level]=&getname;
-		$menu[$menustack[$#menustack]]{$name[$level]}[$ml]=$mno;
-		#$menu[$#menu]{$name[$level]}[$ml]=$level;
+		$name=&getname;
+		$menu[$menustack[$#menustack]]{$name}[$ml]=$mno;
+		#$menu[$#menu]{$name}[$ml]=$level;
 #		$menu[$#menu+1][$ml]=$level;
-#		$menu[$#menu][$mn]=$name[$level];
-		&gettag;		# must be </name> else GIGO and we don't care
+#		$menu[$#menu][$mn]=$name;
+		&gettag;	# must be </name> else GIGO and we don't care
 		next;
 	}
 	if($tag=~/^\/name$/i) {
@@ -230,7 +304,7 @@ while($trigger==0 || $level>0) {
 	close F_IN;
 		$directory[$level][$dn]=$name;
 		$directory[$level][$di]=$icon;
-		&gettag;		# must be </directory> else GIGO and we don't care
+		&gettag;	# must be </directory> else GIGO and we don't care
 		next;
 	}
 	if($tag=~/^\/directory$/i) {
@@ -238,48 +312,87 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if($tag=~/^include$/i) {
-		$include[$level]=1;
+		$include=1;
+		%tmpapps=();
 		next;
 	}
 	if($tag=~/^\/include$/i) {
-		$include[$level]=0;
+		$include=0;
 		next;
 	}
-	if(($tag=~/^and$/i)&&($include[$level])) {
-		&cand;
+	if(($tag=~/^and$/i)&& $include) {
+		%tmpapps=&cand;
+		foreach my $dir (keys %tmpapps) {
+		foreach my $name(keys %{$tmpapps{$dir}}) {
+			$menu[$mno]{$name}[$ml]=-1;
+			$menu[$mno]{$name}[$mi]=$tmpapps{$dir}{$name}[$ai];
+			$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
+		}
+		}
 		next;
 	}
-	if(($tag=~/^\/and$/i)&&($include[$level])) {
+	if(($tag=~/^\/and$/i)&& $include) {
 		# we shouldn't be here!
 		next;
 	}
-	if(($tag=~/^or$/i)&&($include[$level])) {
-		&cor;
+	if(($tag=~/^or$/i)&& $include) {
+		%tmpapps=&cor;
+		foreach my $dir (keys %tmpapps) {
+		foreach my $name(keys %{$tmpapps{$dir}}) {
+			$menu[$mno]{$name}[$ml]=-1;
+			$menu[$mno]{$name}[$mi]=$tmpapps{$dir}{$name}[$ai];
+			$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
+		}
+		}
 		next;
 	}
-	if(($tag=~/^\/or$/i)&&($include[$level])) {
+	if(($tag=~/^\/or$/i)&& $include) {
 		# we shouldn't be here!
 		next;
 	}
-	if(($tag=~/^not$/i)&&($include[$level])) {
-		&cnot;
+	if(($tag=~/^not$/i)&& $include) {
+		%tmpapps=&cnot;
+		foreach my $dir (keys %tmpapps) {
+		foreach my $name(keys %{$tmpapps{$dir}}) {
+			$menu[$mno]{$name}[$ml]=-1;
+			$menu[$mno]{$name}[$mi]=$tmpapps{$dir}{$name}[$ai];
+			$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
+		}
+		}
 		next;
 	}
-	if(($tag=~/^\/not$/i)&&($include[$level])) {
+	if(($tag=~/^\/not$/i)&& $include) {
 		# we shouldn't be here!
 		next;
 	}
-	if(($tag=~/^category$/i)&&($include[$level])) {
+	if(($tag=~/^category$/i)&& $include) {
 		$dir=&getname;
 		foreach my $name(keys %{$apps{$dir}}) {
 			$menu[$mno]{$name}[$ml]=-1;
 			$menu[$mno]{$name}[$mi]=$apps{$dir}{$name}[$ai];
 			$menu[$mno]{$name}[$me]=$apps{$dir}{$name}[$ae];
 		}
-		&gettag;		# must be </category> else GIGO and we don't care
+		&gettag;	# must be </category> else GIGO and we don't care
 		next;
 	}
-	if(($tag=~/^\/category$/i)&&($include[$level])) {
+	if(($tag=~/^\/category$/i)&& $include) {
+		# we shouldn't be here!
+		next;
+	}
+	if($tag=~/^mergefile$/i) {
+		$name=&getname;
+		&gettag;	# must be </mergefile> else GIGO and we don't care
+		my $tmpfile="";
+		open F_IN, "/etc/xdg/menus/$name" or warn "! Cannot open $_: $!\n";
+		while(<F_IN>) {
+			chop;
+			$tmpfile.=$_;
+		}
+		close F_IN;
+		$file=$tmpfile.$file;
+		next;
+	}
+	if($tag=~/^\/mergefile$/i) {
 		# we shouldn't be here!
 		next;
 	}
