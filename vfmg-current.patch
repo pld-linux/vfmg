@@ -1,4 +1,4 @@
-diff -urN vfmg-0.9.18/README vfmg/README
+diff -ur vfmg-0.9.18/README vfmg/README
 --- vfmg-0.9.18/README	2004-03-12 18:45:11.000000000 +0100
 +++ vfmg/README	2004-03-12 07:26:29.000000000 +0100
 @@ -5,10 +5,6 @@
@@ -12,9 +12,9 @@ diff -urN vfmg-0.9.18/README vfmg/README
  - destination directory
  - main menu name
  - icons cache
-diff -urN vfmg-0.9.18/vfmg vfmg/vfmg
+diff -ur vfmg-0.9.18/vfmg vfmg/vfmg
 --- vfmg-0.9.18/vfmg	2004-09-07 18:07:08.000000000 +0200
-+++ vfmg/vfmg	2004-10-22 03:23:06.000000000 +0200
++++ vfmg/vfmg	2004-11-27 15:42:27.000000000 +0100
 @@ -1,5 +1,5 @@
  #!/usr/bin/perl -w
 -#$Id$
@@ -288,18 +288,41 @@ diff -urN vfmg-0.9.18/vfmg vfmg/vfmg
  			enlightenment($menu[$no]{$entry}[0],"$name","$name");
  		}
  	}
-@@ -919,6 +994,10 @@
- eval "use open OUT => ':locale'" unless $o_enc;
- binmode(STDOUT, ":encoding($o_enc)") if $o_enc;
+@@ -914,10 +989,15 @@
+ 	}
+ }
  
-+require I18N::Langinfo;
-+I18N::Langinfo->import(qw(langinfo CODESET));
-+$o_enc=langinfo(CODESET()) unless $o_enc;
-+
+-$o_enc="utf-8" if ($o_utf and not $o_enc);
++$o_enc||="utf-8" if $o_utf;
+ #use open OUT => ':utf8';
+-eval "use open OUT => ':locale'" unless $o_enc;
+-binmode(STDOUT, ":encoding($o_enc)") if $o_enc;
++#eval "use open OUT => ':locale'" unless $o_enc;	# $o_enc always set
++unless ($o_enc) {
++	require I18N::Langinfo;
++	I18N::Langinfo->import(qw(langinfo CODESET));
++	$o_enc=langinfo(CODESET()) unless $o_enc;
++}
++binmode STDOUT, ":encoding($o_enc)";
+ 
  if($o_output eq "icewm") {
  	icewm($o_strip);
+@@ -942,11 +1022,11 @@
  	exit;
-@@ -965,6 +1044,10 @@
+ }
+ if($o_output eq "xfce4") {
+-	print "<xfdesktop-menu>
+-	<title name=\"Desktop Menu\" visible=\"yes\"/>\n" unless $o_nomenu;
++	print "<xfdesktop-menu>\n";
++	print "<title name=\"Desktop Menu\" visible=\"yes\"/>\n" unless $o_nomenu;
+ 	$level.="	";
+ 	xfce4($o_strip);
+-	print "</xfdesktop-menu>\n" unless $o_nomenu;
++	print "</xfdesktop-menu>\n";
+ 	exit;
+ }
+ if($o_output eq "afterstep") {
+@@ -965,6 +1045,10 @@
  	afterstep($o_strip,$dir);
  	exit;
  }
@@ -310,7 +333,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg/vfmg
  if($o_output eq "fluxbox") {	# This is the same as blackbox (I hope so)
  	print "[begin] (Fluxbox)\n" unless $o_nomenu;
  	blackbox($o_strip);
-@@ -997,6 +1080,13 @@
+@@ -997,6 +1081,13 @@
  		rename("$dir","$dir.old");
  	}
  	mkpath("$dir",0,0700);	# or die
@@ -324,15 +347,9 @@ diff -urN vfmg-0.9.18/vfmg vfmg/vfmg
  	enlightenment($o_strip,"index","Enlightenment");
  	exit;
  }
-diff -urN vfmg-0.9.18/vfmg.cron vfmg/vfmg.cron
---- vfmg-0.9.18/vfmg.cron	1970-01-01 01:00:00.000000000 +0100
-+++ vfmg/vfmg.cron	2004-10-22 03:18:03.053922424 +0200
-@@ -0,0 +1,2 @@
-+# regenerate default menus for different windowmanagers
-+15 */2 * * *	root	/etc/rc.d/init.d/vfmg restart >/dev/null 2>&1
-diff -urN vfmg-0.9.18/vfmg.html vfmg/vfmg.html
+diff -ur vfmg-0.9.18/vfmg.html vfmg/vfmg.html
 --- vfmg-0.9.18/vfmg.html	2004-08-01 08:13:58.000000000 +0200
-+++ vfmg/vfmg.html	2004-10-22 03:19:03.918669576 +0200
++++ vfmg/vfmg.html	2004-11-14 05:10:20.200322792 +0100
 @@ -4,7 +4,7 @@
  	<title>VFolders Menu Generator home page</title>
  	<meta name="author" content="gotar">
@@ -350,17 +367,33 @@ diff -urN vfmg-0.9.18/vfmg.html vfmg/vfmg.html
  <a TARGET="_blank" href="http://www.fvwm.org/">fvwm2</a>,
  <a TARGET="_blank" href="http://www.icewm.org/">icewm</a>,
  <a TARGET="_blank" href="http://www.phys.columbia.edu/~flame/olvwm.html">olvwm</a>,
-diff -urN vfmg-0.9.18/vfmg.init vfmg/vfmg.init
+diff -ur vfmg-0.9.18/vfmg.init vfmg/vfmg.init
 --- vfmg-0.9.18/vfmg.init	2004-07-07 15:39:20.000000000 +0200
-+++ vfmg/vfmg.init	2004-10-22 03:23:44.000000000 +0200
-@@ -1,5 +1,5 @@
++++ vfmg/vfmg.init	2004-11-27 16:40:00.000000000 +0100
+@@ -1,41 +1,56 @@
  #!/bin/sh
 -# $Id$
 +# $Id$
  
  # vfmg		Regenaration for window managers menus
  #
-@@ -17,25 +17,35 @@
+ # chkconfig:	345 93 07
+ #
+-# description:	Support fo fluxbox and XFCE4
++# description:	Support for fluxbox, XFCE4, fvwm, fvwm2
+ #
+ # author:	Lukasz Pawelczyk <havner@pld-linux.org> 2004
+ 
+ # Source function library
+ . /etc/rc.d/init.d/functions
+ 
++# generate menus using chosen locale
++if [ -f /etc/sysconfig/i18n ]; then
++	. /etc/sysconfig/i18n
++fi
++
+ if [ -f /etc/sysconfig/vfmg ]; then
+ 	. /etc/sysconfig/vfmg
  fi
  
  case "$1" in
@@ -404,9 +437,9 @@ diff -urN vfmg-0.9.18/vfmg.init vfmg/vfmg.init
  	msg_usage "$0 {start|stop|restart|reload|force-reload|status}"
  	exit 3
  esac
-diff -urN vfmg-0.9.18/vfmg.sysconfig vfmg/vfmg.sysconfig
+diff -ur vfmg-0.9.18/vfmg.sysconfig vfmg/vfmg.sysconfig
 --- vfmg-0.9.18/vfmg.sysconfig	2004-07-06 23:28:10.000000000 +0200
-+++ vfmg/vfmg.sysconfig	2004-10-22 03:20:59.869042440 +0200
++++ vfmg/vfmg.sysconfig	2004-11-14 05:10:20.285309872 +0100
 @@ -3,6 +3,10 @@
  
  XFCE4="yes"
