@@ -1,7 +1,7 @@
 #compdef vfmg
 
 _arguments \
-	':Output:(afterstep blackbox fluxbox icewm wmaker wmaker-old xfce4)' \
+	':Output:(afterstep blackbox fluxbox fvwm2 icewm wmaker wmaker-old xfce4)' \
 	'(-h --help)'{-h,--help}'[print help]' \
 	'(-t --tags)'{-t,--tags}'[echo omitted tags to stderr]' \
 	'(-e --end)'{-e,--end}'[echo omitted XDG file ending to stderr]' \

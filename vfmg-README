@@ -11,6 +11,7 @@ TODO:
 - default f/a icon option
 - readline on closed filehandle
 - old style afterstep menu
+- fvwm2: use 'AddToFunc' and 'Exec exec'?
 - locate the slowest part
 - make use of XDG_{CONFIG,DATA}_{DIRS,HOME} env. variables
 - support for the rest of tags (vfmg -t)
