@@ -275,10 +275,11 @@ while($trigger==0 || $level>0) {
 			foreach my $entry(keys %{$menu[$i]}) {
 				delete($menu[$i]{$entry}) if $menu[$i]{$entry}[$ml]==$mno;
 			}
-			$menu[$i]{$directory[$level][$dn]}[$ml]=$mno;
-			$menu[$i]{$directory[$level][$dn]}[$mi]=$directory[$level][$di];
+			$name=$directory[$level][$dn];
+			$menu[$i]{$name}[$ml]=$mno;
+			$menu[$i]{$name}[$mi]=$directory[$level][$di];
 			delete($directory[$level]);
-		}
+		}	# else we don't have icon
 		#}
 		$mno=$i;
 		$#menustack--;
