@@ -2,6 +2,36 @@
 
 use strict;
 use File::Find;
+use Getopt::Long;
+
+my $help=0;
+my $o_tags=0;
+my $o_end=0;
+my $o_icons=0;
+my $o_exec=0;
+my @path;
+
+GetOptions('help'=>\$help,
+	'tags'=>\$o_tags,
+	'end|e'=>\$o_end,
+	'icons'=>\$o_icons,
+	'exec|x'=>\$o_exec
+	);
+
+if($help) {
+	print "Usage:
+	-h, --help	- print this help
+	-t, --tags	- echo omitted tags to stderr
+	-e, --end	- echo omitted XDG file ending to stderr
+	-i, --icons	- check for icons existence
+	-x, --exec	- check for binaries existence
+	";
+	exit;
+}
+
+if($o_exec) {
+	@path=split(/:/,$ENV{'PATH'});
+}
 
 # get locale (for Name[*])
 
@@ -60,11 +90,19 @@ sub wanted {
 	close F_IN;
 	$exec="xterm -e $exec" if $term==1;
 	my @cats=split(/;+/,$cats);
-	my $cat;
-	foreach $cat(@cats) {
-# TODO: check if binary exist within $PATH
+	if($o_exec) {
+		my $exists=0;
+		my $bin=$exec;
+		$bin=~s/(\S+).*/$1/;
+		foreach my $dir(@path) {
+			$exists=1 if -x "$dir/$bin";
+		}
+		@cats=() unless $exists;
+	}
+	if($o_icons) {
+	}
+	foreach my $cat(@cats) {
 		$apps{$cat}{$name}[$ae]="$exec";
-# TODO: check if icon exist
 		$apps{$cat}{$name}[$ai]="$icon";
 	}
 }
@@ -233,7 +271,7 @@ sub cnot {
 			next;
 		}
 		if($tag=~/^(and|or|not)$/i) {	# I think it doesn't make any sense
-			print "warning: How did you get here!?\n";
+			warn "How did you get here!?\n";
 			my %tmpapps;
 			%tmpapps=&cand if $tag=~/^and$/i;
 			%tmpapps=&cor if $tag=~/^or$/i;
@@ -279,7 +317,7 @@ while($trigger==0 || $level>0) {
 			$menu[$i]{$name}[$ml]=$mno;
 			$menu[$i]{$name}[$mi]=$directory[$level][$di];
 			delete($directory[$level]);
-		}	# else we don't have icon
+		}
 		#}
 		$mno=$i;
 		$#menustack--;
@@ -376,10 +414,10 @@ while($trigger==0 || $level>0) {
 	if(($tag=~/^\/(name|directory|and|or|not|category|mergefile)$/i)&& $include) {
 		print "warning: XDG file corrupted!\n";
 	}
-	# print "$level: $tag\n";
+	warn "Omitted tag: $tag\n" if $o_tags;
 }
 
-# print "\n\n\n$file\n";
+warn "Omitted ending: $file\n" if(($file ne "") && $o_end);
 
 $level=-1;
 sub outgen {
@@ -390,12 +428,12 @@ sub outgen {
 			for(my $i=0; $i<=$level; $i++) {
 				print "	";
 			}
-			print "Entry: \"$entry\" $menu[$no]{$entry}[$mi] $menu[$no]{$entry}[$me]\n";
+			print "Entry: \"$entry\" \"$menu[$no]{$entry}[$mi]\" $menu[$no]{$entry}[$me]\n";
 		} else {
 			for(my $i=0; $i<=$level; $i++) {
 				print "	";
 			}
-			print "Menu: \"$entry\" $menu[$no]{$entry}[$mi]\n";
+			print "Menu: \"$entry\" \"$menu[$no]{$entry}[$mi]\"\n";
 			$level++;
 			outgen($menu[$no]{$entry}[$ml]);
 			$level--;
