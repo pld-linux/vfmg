@@ -52,7 +52,8 @@ generowanie menu dla zarz±dców okien o okreslonych godzinach.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_datadir}/zsh/site-functions,/etc/{rc.d/init.d,sysconfig}}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_datadir}/zsh/site-functions} \
+	   $RPM_BUILD_ROOT/etc/{cron.d,rc.d/init.d,sysconfig}
 
 install vfmg $RPM_BUILD_ROOT%{_bindir}
 install vfmg-zsh $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_vfmg
