@@ -5,6 +5,10 @@ ISSUES:
 - AfterStep doesn't shrink icons (e.g. bigger png ones) - it looks funny;)
 
 TODO:
+- icons cache
+- transliterations
+- verbose (for warns)
+- readline on closed filehandle
 - moving submenus before programs within menu
 - stripping 1st level menu
 - old style afterstep menu
