@@ -35,7 +35,6 @@ wype³niaj±cych specyfikacjê menu z freedesktop.org.
 %package cron
 Summary:	Crontab file for VFolders Menu Generator
 Summary(pl):	Plik crontaba dla generatora menu opartego na vfolders
-Name:		vfmg
 Group:		X11/Window Managers/Tools
 Requires:	crondaemon
 
