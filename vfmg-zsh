@@ -5,8 +5,9 @@ _arguments \
 	'(-h --help)'{-h,--help}'[print help]' \
 	'(-t --tags)'{-t,--tags}'[echo omitted tags to stderr]' \
 	'(-e --end)'{-e,--end}'[echo omitted XDG file ending to stderr]' \
+	'(-v --verbose)'{-v,--verbose}'[verbose output]' \
 	'(-i --icons)'{-i,--icons}'[check for icons existence]' \
 	'(-x --exec)'{-x,--exec}'[check for binaries existence]' \
+	'(-f --full)'{-f,--full}'[extend icons and binaries for full path (needs -i or -x)]' \
 	'(-c --clear)'{-c,--clear}'[remove empty menus]' \
-	'(-p --promote -c --clear)'{-p,--promote}'[promote submenus with single entry]' \
-	'(-v --verbose)'{-v,--verbose}'[verbose output]'
+	'(-p --promote -c --clear)'{-p,--promote}'[promote submenus with single entry]'
