@@ -8,7 +8,7 @@ License:	GPL
 Group:		X11/Window Managers/Tools
 Vendor:		GoTaR <gotar@pld-linux.org>
 Source0:	http://ep09.pld-linux.org/~havner/%{name}-%{version}.tar.bz2
-# Source0-md5:	ba13c5c5c2516e0b58257c491c69a568
+# Source0-md5:	a6eb5a2c9e88eb544dedceae77df01c9
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
 Requires:	applnk >= 1.9.0
