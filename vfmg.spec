@@ -3,18 +3,13 @@ Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
 Version:	0.9.18
-Release:	4
+Release:	5
 License:	GPL
 Group:		X11/Window Managers/Tools
 Vendor:		GoTaR <gotar@pld-linux.org>
 Source0:	%{name}-%{version}.tar.bz2
 # Source0-md5:	0175143d8bd08a2a82bde106d191d418
-Source1:	%{name}.cron
-Patch0:		%{name}-fvwm2.patch
-Patch1:		%{name}-fvwm.patch
-Patch2:		%{name}-use_tempfile.patch
-Patch3:		%{name}-codeset.patch
-Patch4:		%{name}-scale_icon.patch
+Patch0:		%{name}-current.patch
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
 Requires:	applnk >= 1.9.0
@@ -53,10 +48,6 @@ generowanie menu dla zarz±dców okien o okreslonych godzinach.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -67,7 +58,7 @@ install vfmg $RPM_BUILD_ROOT%{_bindir}
 install vfmg-zsh $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_vfmg
 install vfmg.init $RPM_BUILD_ROOT/etc/rc.d/init.d/vfmg
 install vfmg.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/vfmg
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/cron.d/vfmg
+install vfmg.cron $RPM_BUILD_ROOT/etc/cron.d/vfmg
 
 %clean
 rm -rf $RPM_BUILD_ROOT
