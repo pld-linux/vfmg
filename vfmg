@@ -11,6 +11,7 @@ my $o_icons=0;
 my $o_exec=0;
 my $o_clear=0;
 my $o_promote=0;
+my $o_verbose=0;
 my $o_output="";
 my @path;
 
@@ -20,7 +21,8 @@ GetOptions('help'=>\$o_help,
 	'icons'=>\$o_icons,
 	'exec|x'=>\$o_exec,
 	'clear'=>\$o_clear,
-	'promote'=>\$o_promote
+	'promote'=>\$o_promote,
+	'verbose'=>\$o_verbose
 	);
 
 if($o_help) {
@@ -32,6 +34,7 @@ if($o_help) {
 	-x, --exec	- check for binaries existence
 	-c, --clear	- remove empty menus
 	-p, --promote	- promote submenus with single entry
+	-v, --verbose	- verbose output
 	";
 	exit;
 }
@@ -234,7 +237,7 @@ sub cand {
 			}
 			next;
 		}
-		warn "warning: possible XDG file corruption!: $tag\n";
+		warn "warning: possible XDG file corruption!: $tag\n" if $o_verbose;
 	}
 	%iapps;
 }
@@ -270,7 +273,7 @@ sub cor {
 			}
 			next;
 		}
-		warn "warning: possible XDG file corruption!: $tag\n";
+		warn "warning: possible XDG file corruption!: $tag\n" if $o_verbose;
 	}
 	%iapps;
 }
@@ -301,7 +304,7 @@ sub cnot {
 			next;
 		}
 		if($tag=~/^(and|or|not)$/i) {	# I think it doesn't make any sense
-			warn "How did you get here!?\n";
+			warn "How did you get here!?\n" if $o_verbose;
 			my %tmpapps;
 			%tmpapps=cand() if $tag=~/^and$/i;
 			%tmpapps=cor() if $tag=~/^or$/i;
@@ -312,7 +315,7 @@ sub cnot {
 			}
 			}
 			next;
-		warn "warning: possible XDG file corruption!: $tag\n";
+		warn "warning: possible XDG file corruption!: $tag\n" if $o_verbose;
 		}
 	}
 	%iapps;
@@ -452,12 +455,12 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if(($tag=~/^\/(name|directory|and|or|not|category|mergefile)$/i)&& $include) {
-		warn "warning: XDG file corrupted!\n";
+		warn "warning: XDG file corrupted!\n" if $o_verbose;
 	}
-	warn "Omitted tag: $tag\n" if $o_tags;
+	warn "Omitted tag: $tag\n" if ($o_tags && $o_verbose);
 }
 
-warn "Omitted ending: $file\n" if(($file ne "")&& $o_end);
+warn "Omitted ending: $file\n" if(($file ne "")&& $o_end && $o_verbose);
 
 if(($o_clear)&&(!$o_promote)) {
 	my @empty;
@@ -586,7 +589,7 @@ sub xfce4 {
 	foreach my $entry(sort keys %{$menu[$no]}) {
 		print "$level<";
 		if($menu[$no]{$entry}[0]<0) {
-			$menu[$no]{$entry}[2]=~s/\"/\\\"/g;
+			$menu[$no]{$entry}[2]=~s/\"/\'/g;
 			print "app name=\"$entry\" cmd=\"$menu[$no]{$entry}[2]\"/>\n";
 		} else {
 			print "menu name=\"$entry\" visible=\"yes\">\n";
@@ -636,8 +639,8 @@ if($o_output eq "wmaker") {
 	exit;
 }
 if($o_output eq "xfce4") {
-	print '<xfdesktop-menu>
-	<title name="Desktop Menu" visible="yes" />\n';
+	print "<xfdesktop-menu>
+	<title name=\"Desktop Menu\" visible=\"yes\"/>\n";
 	$level.="	";
 	xfce4(0);
 	print "</xfdesktop-menu>\n";

@@ -7,7 +7,7 @@ ISSUES:
 TODO:
 - icons cache
 - transliterations
-- verbose (for warns)
+- check for empty $file
 - readline on closed filehandle
 - moving submenus before programs within menu
 - stripping 1st level menu
