@@ -1,3 +1,4 @@
+%include	/usr/lib/rpm/macros.perl
 Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
@@ -11,6 +12,7 @@ Source1:	%{name}-zsh
 Source2:	%{name}-README
 Source3:	%{name}.html
 URL:		http://vfmg.sourceforge.net/
+BuildRequires:	rpm-perlprov
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -27,7 +29,7 @@ wkrótce) z plików desktop wype³niaj±cych specyfikacjê menu z
 freedesktop.org.
 
 %prep
-%setup -c -T
+%setup -q -c -T
 
 %install
 rm -rf $RPM_BUILD_ROOT
