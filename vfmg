@@ -1,0 +1,137 @@
+#!/usr/bin/perl -w
+
+use strict;
+use File::Find;
+
+# get locale (for Name[*])
+
+my $lang4="";
+$lang4=$ENV{LANG} if exists $ENV{LANG};
+$lang4=$ENV{LC_MESSAGES} if exists $ENV{LC_MESSAGES};
+$lang4=$ENV{LC_ALL} if exists $ENV{LC_ALL};
+my $lang3=$lang4;
+$lang3=~s/@.*//;
+my $lang2=$lang3;
+$lang2=~s/\..*//;
+my $lang1=$lang2;
+$lang1=~s/_.*//;
+
+# read desktop entries TODO: DESKTOP_FILE_PATH
+
+my %apps;
+
+my $ee=1;
+my $ii=2;
+find(\&wanted,'/usr/share/applications/');
+
+sub wanted {
+	return if (!-f || /^\./ || !/\.desktop$/);
+	my $name="";
+	my $exec="";
+	my $icon="";
+	my $cats="";
+	my $term=0;
+	my $lang=0;
+	open F_IN, "$_" or warn "! Cannot open $_: $!\n" and return;
+	while(<F_IN>) {
+		if (/^Name=(.+)/ && $lang<1) {
+			$name=$1;
+		}
+		if (/^Name\[$lang1\]=(.+)/ && $lang<2) {
+			$name=$1;
+			$lang=1;
+		}
+		if (/^Name\[$lang2\]=(.+)/ && $lang<3) {
+			$name=$1;
+			$lang=2;
+		}
+		if (/^Name=\[$lang3\](.+)/ && $lang<4) {
+			$name=$1;
+			$lang=3;
+		}
+		if (/^Name=\[$lang4\](.+)/ && $lang<5) {
+			$name=$1;
+			$lang=4;
+		}
+		$exec=$1 if /^Exec=(.+)/;
+		$icon=$1 if /^Icon=(.+)/;
+		$cats=$1 if /^Categories=(.+)/;
+		$term=1 if /^Terminal=1/;
+	}
+	close F_IN;
+	$exec="xterm -e $exec" if $term==1;
+	my @cats=split(/;+/,$cats);
+	my $cat;
+	foreach $cat(@cats) {
+# TODO: check if binary exist within $PATH
+		$apps{$cat}{$name}[$ee]="$exec";
+# TODO: check if icon exist
+		$apps{$cat}{$name}[$ii]="$icon";
+	}
+}
+
+=for comment print apps
+foreach my $category(sort keys %apps) {
+	print "$category	\n";
+	foreach my $name(sort keys %{$apps{$category}}) {
+		printf "	%s|%s|%s\n",$name,$apps{$category}{$name}[$ii],$apps{$category}{$name}[$ee];
+	}
+	print "\n";
+}
+=cut
+
+# read XDG menu specification
+
+my %menu;
+my $file="";
+my $level=0;
+my $trigger=0;
+
+open F_IN, "/etc/xdg/menus/applications.menu" or die "! Cannot open $_: $!\n";
+while(<F_IN>) {
+	#s/\s*//g;
+	chop;
+	$file.=$_;
+}
+close F_IN;
+
+sub gettag {
+	$file=~s/.*?<(.*?)>\s*//;
+	$1;
+}
+
+sub getname {
+	$file=~s/\s*(.*?)\s*<//;
+	$file="<".$file;
+	$1;
+}
+
+my $tag;
+my $name;
+my $include;
+while($trigger==0 || $level>0) {
+	$tag=&gettag;
+	if($tag=~/^menu$/i){
+		$trigger=1;
+		$level++;
+		next;
+	}
+	if($tag=~/^\/menu$/i){
+		$level--;
+		next;
+	}
+	if($tag=~/^name$/i){
+		$name=&getname;
+		gettag;		# must be </name> else GIGO and we don't care
+		next;
+	}
+	if($tag=~/^include$/i){
+		$include=0;
+		next;
+	}
+	if($tag=~/^\/include$/i){
+		$include=0;
+		next;
+	}
+	print "$level: $tag\n";
+}
