@@ -1,0 +1,48 @@
+diff -u vfmg-0.9.18.orig/vfmg.init vfmg-0.9.18/vfmg.init
+--- vfmg-0.9.18.orig/vfmg.init	Wed Jul  7 15:39:20 2004
++++ vfmg-0.9.18/vfmg.init	Thu Sep 16 11:49:18 2004
+@@ -17,7 +17,7 @@
+ fi
+ 
+ case "$1" in
+-	start|restart|reload|force-reload)
++  start|restart|reload|force-reload)
+ 	if is_yes "$FLUXBOX" && [ -f /etc/X11/fluxbox/menu2 ]; then
+ 			show "Regenerating fluxbox menu"; busy
+ 			if vfmg -i -f -x -c -s fluxbox > /etc/X11/fluxbox/menu2 2>/dev/null; then ok; else fail; fi
+@@ -26,16 +26,19 @@
+ 			show "Regenerating XFCE4 menu"; busy
+ 			if vfmg -i -f -x -c -u -m xfce4 > /etc/xfce4/menu2.xml 2>/dev/null; then ok; else fail; fi
+ 	fi
+-
++	if is_yes "$FVWM2" && [ -f /etc/X11/fvwm2/fvwm2.menu2 ]; then
++			show "Regenerating FVWM2 menu"; busy
++			if vfmg -i -f -x -c fvwm2 > /etc/X11/fvwm2/fvwm2.menu2. 2>/dev/null \
++				&& mv /etc/X11/fvwm2/fvwm2.menu2. /etc/X11/fvwm2/fvwm2.menu2; then ok; else fail; fi
++	fi
+ 	touch /var/lock/subsys/vfmg
+ 	;;
+-	stop)
+-
++  stop)
+ 	rm -f /var/lock/subsys/vfmg
+ 	;;
+-	status)
++  status)
+ 	;;
+-	*)
++  *)
+ 	msg_usage "$0 {start|stop|restart|reload|force-reload|status}"
+ 	exit 3
+ esac
+diff -u vfmg-0.9.18.orig/vfmg.sysconfig vfmg-0.9.18/vfmg.sysconfig
+--- vfmg-0.9.18.orig/vfmg.sysconfig	Tue Jul  6 23:28:10 2004
++++ vfmg-0.9.18/vfmg.sysconfig	Thu Sep 16 09:54:31 2004
+@@ -3,6 +3,7 @@
+ 
+ XFCE4="yes"
+ FLUXBOX="yes"
++FVWM2="yes"
+ 
+ # This must be last line !
+ # vi:syntax=sh:tw=78:ts=8:sw=4
