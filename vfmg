@@ -4,21 +4,21 @@ use strict;
 use File::Find;
 use Getopt::Long;
 
-my $help=0;
+my $o_help=0;
 my $o_tags=0;
 my $o_end=0;
 my $o_icons=0;
 my $o_exec=0;
 my @path;
 
-GetOptions('help'=>\$help,
+GetOptions('help'=>\$o_help,
 	'tags'=>\$o_tags,
 	'end|e'=>\$o_end,
 	'icons'=>\$o_icons,
 	'exec|x'=>\$o_exec
 	);
 
-if($help) {
+if($o_help) {
 	print "Usage:
 	-h, --help	- print this help
 	-t, --tags	- echo omitted tags to stderr
@@ -30,15 +30,15 @@ if($help) {
 }
 
 if($o_exec) {
-	@path=split(/:/,$ENV{'PATH'});
+	@path=split(/:+/,$ENV{'PATH'});
 }
 
 # get locale (for Name[*])
 
 my $lang4="";
-$lang4=$ENV{LANG} if exists $ENV{LANG};
-$lang4=$ENV{LC_MESSAGES} if exists $ENV{LC_MESSAGES};
-$lang4=$ENV{LC_ALL} if exists $ENV{LC_ALL};
+$lang4=$ENV{'LANG'} if exists $ENV{'LANG'};
+$lang4=$ENV{'LC_MESSAGES'} if exists $ENV{'LC_MESSAGES'};
+$lang4=$ENV{'LC_ALL'} if exists $ENV{'LC_ALL'};
 my $lang3=$lang4;
 $lang3=~s/@.*//;
 my $lang2=$lang3;
@@ -46,11 +46,11 @@ $lang2=~s/\..*//;
 my $lang1=$lang2;
 $lang1=~s/_.*//;
 
-# read desktop entries TODO: DESKTOP_FILE_PATH
+# what is $DESKTOP_FILE_PATH?
 
 my %apps;
-	my $ae=1;	# application exec
-	my $ai=2;	# application icon
+	my $ae=0;	# application exec
+	my $ai=1;	# application icon
 find(\&wanted,'/usr/share/applications/');
 
 sub wanted {
@@ -88,7 +88,7 @@ sub wanted {
 		$term=1 if /^Terminal=1/;
 	}
 	close F_IN;
-	$exec="xterm -e $exec" if $term==1;
+	$exec="xterm -e $exec" if $term;
 	my @cats=split(/;+/,$cats);
 	if($o_exec) {
 		my $exists=0;
@@ -100,10 +100,16 @@ sub wanted {
 		@cats=() unless $exists;
 	}
 	if($o_icons) {
+		my $exists=0;
+		foreach my $dir("$ENV{'HOME'}/.icons","/usr/share/icons","/usr/share/pixmaps") {
+			$exists=1 if((-f "$dir/$icon")||(-f "$dir/$icon.xpm"))
+		}
+		$icon="" unless $exists;
 	}
 	foreach my $cat(@cats) {
-		$apps{$cat}{$name}[$ae]="$exec";
-		$apps{$cat}{$name}[$ai]="$icon";
+		#$apps{$cat}{$name}[$ae]="$exec";
+		#$apps{$cat}{$name}[$ai]="$icon";
+		$apps{$cat}{$name}=[$exec,$icon];
 	}
 }
 
@@ -141,11 +147,10 @@ sub getname {
 }
 
 my @menu;
-		# positive level: submenu
-		# negative level: entry
-		my $ml=0;
-		my $mi=1;
-		my $me=2;
+	my $ml=0;	# positive level: submenu
+			# negative level: entry
+	my $mi=1;
+	my $me=2;
 =for menustruct
 	menu[x] {ble}	-1	ble.png	/usr/bin/ble
 		{bla}	3	bla.xpm
@@ -180,29 +185,30 @@ my @menustack;
 sub cand {
 	my %iapps;	# internal applications list
 	foreach my $dir (keys %apps) {
-	foreach my $name(sort keys %{$apps{$dir}}) {
-		$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
-		$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+	foreach my $name(keys %{$apps{$dir}}) {
+		#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
+		#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+		$iapps{$dir}{$name}=[$apps{$dir}{$name}[$ae],$apps{$dir}{$name}[$ai]];
 	}
 	}
 	while (1) {
-		$tag=&gettag;
+		$tag=gettag();
 		last if($tag=~/^\/and$/i);
 		if($tag=~/^category$/i) {
-			$dir=&getname;
+			$dir=getname();
 			foreach my $cat (keys %iapps) {
 			foreach my $name(keys %{$iapps{$cat}}) {
 				delete($iapps{$cat}{$name}) unless exists $iapps{$dir}{$name};
 			}
 			}
-			&gettag;	# must be </category> else GIGO and we don't care
+			gettag();	# must be </category> else GIGO and we don't care
 			next;
 		}
 		if($tag=~/^(and|or|not)$/i) {
 			my %tmpapps;
-			%tmpapps=&cand if $tag=~/^and$/i;
-			%tmpapps=&cor if $tag=~/^or$/i;
-			%tmpapps=&cnot if $tag=~/^not$/i;
+			%tmpapps=cand() if $tag=~/^and$/i;
+			%tmpapps=cor() if $tag=~/^or$/i;
+			%tmpapps=cnot() if $tag=~/^not$/i;
 			foreach my $cat (keys %iapps) {
 			foreach my $name(keys %{$iapps{$cat}}) {
 				delete($iapps{$cat}{$name}) unless exists $tmpapps{$cat}{$name};
@@ -210,7 +216,7 @@ sub cand {
 			}
 			next;
 		}
-		print "warning: possible XDG file corruption!: $tag\n";
+		warn "warning: possible XDG file corruption!: $tag\n";
 	}
 	%iapps;
 }
@@ -218,31 +224,33 @@ sub cand {
 sub cor {
 	my %iapps;	# internal applications list
 	while (1) {
-		$tag=&gettag;
+		$tag=gettag();
 		last if($tag=~/^\/or$/i);
 		if($tag=~/^category$/i) {
-			$dir=&getname;
+			$dir=getname();
 			foreach my $name(keys %{$apps{$dir}}) {
-				$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
-				$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+				#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
+				#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+				$iapps{$dir}{$name}=[$apps{$dir}{$name}[$ae],$apps{$dir}{$name}[$ai]];
 			}
-			&gettag;	# must be </category> else GIGO and we don't care
+			gettag();	# must be </category> else GIGO and we don't care
 			next;
 		}
 		if($tag=~/^(and|or|not)$/i) {
 			my %tmpapps;
-			%tmpapps=&cand if $tag=~/^and$/i;
-			%tmpapps=&cor if $tag=~/^or$/i;
-			%tmpapps=&cnot if $tag=~/^not$/i;
+			%tmpapps=cand() if $tag=~/^and$/i;
+			%tmpapps=cor() if $tag=~/^or$/i;
+			%tmpapps=cnot() if $tag=~/^not$/i;
 			foreach my $cat (keys %tmpapps) {
 			foreach my $name(keys %{$tmpapps{$cat}}) {
-				$iapps{$cat}{$name}[$ai]=$tmpapps{$cat}{$name}[$ai];
-				$iapps{$cat}{$name}[$ae]=$tmpapps{$cat}{$name}[$ae];
+				#$iapps{$cat}{$name}[$ai]=$tmpapps{$cat}{$name}[$ai];
+				#$iapps{$cat}{$name}[$ae]=$tmpapps{$cat}{$name}[$ae];
+				$iapps{$cat}{$name}=[$tmpapps{$cat}{$name}[$ae],$tmpapps{$cat}{$name}[$ai]];
 			}
 			}
 			next;
 		}
-		print "warning: possible XDG file corruption!: $tag\n";
+		warn "warning: possible XDG file corruption!: $tag\n";
 	}
 	%iapps;
 }
@@ -250,16 +258,17 @@ sub cor {
 sub cnot {
 	my %iapps;	# internal applications list
 	foreach my $dir (keys %apps) {
-	foreach my $name(sort keys %{$apps{$dir}}) {
-		$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
-		$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+	foreach my $name(keys %{$apps{$dir}}) {
+		#$iapps{$dir}{$name}[$ai]=$apps{$dir}{$name}[$ai];
+		#$iapps{$dir}{$name}[$ae]=$apps{$dir}{$name}[$ae];
+		$iapps{$dir}{$name}=[$apps{$dir}{$name}[$ae],$apps{$dir}{$name}[$ai]];
 	}
 	}
 	while (1) {
-		$tag=&gettag;
+		$tag=gettag();
 		last if($tag=~/^\/not$/i);
 		if($tag=~/^category$/i) {
-			$dir=&getname;
+			$dir=getname();
 			foreach my $cat (keys %iapps) {
 			next if $cat eq $dir;
 			foreach my $name(keys %{$iapps{$cat}}) {
@@ -267,22 +276,22 @@ sub cnot {
 			}
 			}
 			delete($iapps{$dir});
-			&gettag;	# must be </category> else GIGO and we don't care
+			gettag();	# must be </category> else GIGO and we don't care
 			next;
 		}
 		if($tag=~/^(and|or|not)$/i) {	# I think it doesn't make any sense
 			warn "How did you get here!?\n";
 			my %tmpapps;
-			%tmpapps=&cand if $tag=~/^and$/i;
-			%tmpapps=&cor if $tag=~/^or$/i;
-			%tmpapps=&cnot if $tag=~/^not$/i;
+			%tmpapps=cand() if $tag=~/^and$/i;
+			%tmpapps=cor() if $tag=~/^or$/i;
+			%tmpapps=cnot() if $tag=~/^not$/i;
 			foreach my $cat (keys %iapps) {
 			foreach my $name(keys %{$iapps{$cat}}) {
 				delete($iapps{$cat}{$name}) if exists $tmpapps{$cat}{$name};
 			}
 			}
 			next;
-		print "warning: possible XDG file corruption!: $tag\n";
+		warn "warning: possible XDG file corruption!: $tag\n";
 		}
 	}
 	%iapps;
@@ -295,7 +304,7 @@ $#menu++;	# let's start from index 1
 		# twill be made choosable
 
 while($trigger==0 || $level>0) {
-	$tag=&gettag;
+	$tag=gettag();
 	if($tag=~/^menu$/i) {
 		$level++;
 		$#menu++;
@@ -313,9 +322,10 @@ while($trigger==0 || $level>0) {
 			foreach my $entry(keys %{$menu[$i]}) {
 				delete($menu[$i]{$entry}) if $menu[$i]{$entry}[$ml]==$mno;
 			}
-			$name=$directory[$level][$dn];
-			$menu[$i]{$name}[$ml]=$mno;
-			$menu[$i]{$name}[$mi]=$directory[$level][$di];
+			#$name=$directory[$level][$dn];
+			#$menu[$i]{$name}[$ml]=$mno;
+			#$menu[$i]{$name}[$mi]=$directory[$level][$di];
+			$menu[$i]{$directory[$level][$dn]}=[$mno,$directory[$level][$di]];
 			delete($directory[$level]);
 		}
 		#}
@@ -325,14 +335,15 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if($tag=~/^name$/i) {
-		$name=&getname;
-		$menu[$menustack[$#menustack]]{$name}[$ml]=$mno;
-		$menu[$menustack[$#menustack]]{$name}[$mi]="";
-		&gettag;	# must be </name> else GIGO and we don't care
+		$name=getname();
+		#$menu[$menustack[$#menustack]]{$name}[$ml]=$mno;
+		#$menu[$menustack[$#menustack]]{$name}[$mi]="";
+		$menu[$menustack[$#menustack]]{$name}=[$mno,""];
+		gettag();	# must be </name> else GIGO and we don't care
 		next;
 	}
 	if($tag=~/^directory$/i) {
-		$dir=&getname;
+		$dir=getname();
 		my $lang=0;
 		my $name="";
 		my $icon="";
@@ -361,10 +372,11 @@ while($trigger==0 || $level>0) {
 	}
 	close F_IN;
 		if($name ne "") {
-			$directory[$level][$dn]=$name;
-			$directory[$level][$di]=$icon;
+			#$directory[$level][$dn]=$name;
+			#$directory[$level][$di]=$icon;
+			$directory[$level]=[$name,$icon];
 		}
-		&gettag;	# must be </directory> else GIGO and we don't care
+		gettag();	# must be </directory> else GIGO and we don't care
 		next;
 	}
 	if($tag=~/^include$/i) {
@@ -376,31 +388,33 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if(($tag=~/^(and|or|not)$/i)&& $include) {
-		%tmpapps=&cand if $tag=~/^and$/i;
-		%tmpapps=&cor if $tag=~/^or$/i;
-		%tmpapps=&cnot if $tag=~/^not$/i;
+		%tmpapps=cand() if $tag=~/^and$/i;
+		%tmpapps=cor() if $tag=~/^or$/i;
+		%tmpapps=cnot() if $tag=~/^not$/i;
 		foreach my $dir (keys %tmpapps) {
 		foreach my $name(keys %{$tmpapps{$dir}}) {
-			$menu[$mno]{$name}[$ml]=-1;
-			$menu[$mno]{$name}[$mi]=$tmpapps{$dir}{$name}[$ai];
-			$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
+			#$menu[$mno]{$name}[$ml]=-1;
+			#$menu[$mno]{$name}[$mi]=$tmpapps{$dir}{$name}[$ai];
+			#$menu[$mno]{$name}[$me]=$tmpapps{$dir}{$name}[$ae];
+			$menu[$mno]{$name}=[-1,$tmpapps{$dir}{$name}[$ai],$tmpapps{$dir}{$name}[$ae]];
 		}
 		}
 		next;
 	}
 	if(($tag=~/^category$/i)&& $include) {
-		$dir=&getname;
+		$dir=getname();
 		foreach my $name(keys %{$apps{$dir}}) {
-			$menu[$mno]{$name}[$ml]=-1;
-			$menu[$mno]{$name}[$mi]=$apps{$dir}{$name}[$ai];
-			$menu[$mno]{$name}[$me]=$apps{$dir}{$name}[$ae];
+			#$menu[$mno]{$name}[$ml]=-1;
+			#$menu[$mno]{$name}[$mi]=$apps{$dir}{$name}[$ai];
+			#$menu[$mno]{$name}[$me]=$apps{$dir}{$name}[$ae];
+			$menu[$mno]{$name}=[-1,$apps{$dir}{$name}[$ai],$apps{$dir}{$name}[$ae]];
 		}
-		&gettag;	# must be </category> else GIGO and we don't care
+		gettag();	# must be </category> else GIGO and we don't care
 		next;
 	}
 	if($tag=~/^mergefile$/i) {
-		$name=&getname;
-		&gettag;	# must be </mergefile> else GIGO and we don't care
+		$name=getname();
+		gettag();	# must be </mergefile> else GIGO and we don't care
 		my $tmpfile="";
 		open F_IN, "/etc/xdg/menus/$name" or warn "/etc/xdg/menus/$name: $!\n";
 		while(<F_IN>) {
@@ -412,27 +426,24 @@ while($trigger==0 || $level>0) {
 		next;
 	}
 	if(($tag=~/^\/(name|directory|and|or|not|category|mergefile)$/i)&& $include) {
-		print "warning: XDG file corrupted!\n";
+		warn "warning: XDG file corrupted!\n";
 	}
 	warn "Omitted tag: $tag\n" if $o_tags;
 }
 
-warn "Omitted ending: $file\n" if(($file ne "") && $o_end);
+warn "Omitted ending: $file\n" if(($file ne "")&& $o_end);
 
 $level=-1;
 sub outgen {
 	my $no=$_[0];
 	foreach my $entry(sort keys %{$menu[$no]}) {
-		next if $menu[$no]{$entry}[$ml]==0;
+		#next if $menu[$no]{$entry}[$ml]==0;
+		for(my $i=0; $i<=$level; $i++) {
+			print "	";
+		}
 		if($menu[$no]{$entry}[$ml]<0) {
-			for(my $i=0; $i<=$level; $i++) {
-				print "	";
-			}
 			print "Entry: \"$entry\" \"$menu[$no]{$entry}[$mi]\" $menu[$no]{$entry}[$me]\n";
 		} else {
-			for(my $i=0; $i<=$level; $i++) {
-				print "	";
-			}
 			print "Menu: \"$entry\" \"$menu[$no]{$entry}[$mi]\"\n";
 			$level++;
 			outgen($menu[$no]{$entry}[$ml]);
@@ -441,4 +452,4 @@ sub outgen {
 	}
 }
 
-&outgen(0);
+outgen(0);
