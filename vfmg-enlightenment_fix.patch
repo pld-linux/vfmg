@@ -9,19 +9,3 @@
  $tmp="$ENV{'XDG_CONFIG_HOME'}" if $ENV{'XDG_CONFIG_HOME'};
  @tmp=("/etc/xdg");
  @tmp=split(/:+/,$ENV{'XDG_CONFIG_DIRS'}) if $ENV{'XDG_CONFIG_DIRS'};
-@@ -908,13 +908,13 @@
- 		$icon=$menu[$no]{$entry}[1] if $o_icons;
- 		$icon=scale_icon($icon,"png","-geometry 18x18") if $icon;
- 		if($menu[$no]{$entry}[0]<0) {
--			$name=~s/\"/\\\"/g;
-+			$name=~s/\"/\'/g;
- 			print $F_OUT "\"$name\" \"$icon\" exec \"$menu[$no]{$entry}[2]\"\n";
- 		} else {
- 			$name=substr($name,1);
- 			$name=~s|/||g;
- 			my $name2=$name;
--			$name2=~s/\"/\\\"/g;
-+			$name2=~s/\"/\'/g;
- 			print $F_OUT "\"$name2\" \"$icon\" menu \"$dir/$name2.menu\"\n";
- 			enlightenment($menu[$no]{$entry}[0],"$name","$name");
- 		}
