@@ -14,7 +14,7 @@ diff -urN vfmg-0.9.18/README vfmg-current/README
  - icons cache
 diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
 --- vfmg-0.9.18/vfmg	2004-09-07 18:07:08.000000000 +0200
-+++ vfmg-current/vfmg	2004-11-27 15:42:27.000000000 +0100
++++ vfmg-current/vfmg	2005-03-15 20:01:25.000000000 +0100
 @@ -1,5 +1,5 @@
  #!/usr/bin/perl -w
 -#$Id$
@@ -27,7 +27,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  
  if($o_help) {
 -	print "Usage:	$0 [options] {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm2, icewm, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}
-+	print "Usage:	$0 [options] {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm, fvwm2, icewm, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}
++	print "Usage:	$0 [options] {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm, fvwm2, icewm, metisse, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}
  	-h, --help	- print this help
  	-t, --tags	- echo omitted tags to stderr
  	-e, --end	- echo omitted XDG file ending to stderr
@@ -36,19 +36,28 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  }
  
 -die "Missing argument {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm2, icewm, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}\n"
-+die "Missing argument {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm, fvwm2, icewm, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}\n"
++die "Missing argument {aewm, afterstep, blackbox, enlightenment, fbpanel, fluxbox, fvwm, fvwm2, icewm, metisse, openbox, olvwm, qvwm, wmaker, wmaker-old, xfce4, xpde}\n"
  	unless exists $ARGV[0];
  $o_output=$ARGV[0];
  die "Unrecognized argument: $o_output\n"
 -	unless $o_output=~/^(aewm|afterstep|blackbox|enlightenment|fbpanel|fluxbox|fvwm2|icewm|openbox|olvwm|qvwm|wmaker|wmaker-old|xfce4|xpde)$/;
-+	unless $o_output=~/^(aewm|afterstep|blackbox|enlightenment|fbpanel|fluxbox|fvwm|fvwm2|icewm|openbox|olvwm|qvwm|wmaker|wmaker-old|xfce4|xpde)$/;
++	unless $o_output=~/^(aewm|afterstep|blackbox|enlightenment|fbpanel|fluxbox|fvwm|fvwm2|icewm|metisse|openbox|olvwm|qvwm|wmaker|wmaker-old|xfce4|xpde)$/;
  
-+$o_full=1 if $o_icons and $o_output=~/^(enlightenment)$/;
++$o_full=1 if $o_icons and $o_output=~/^(enlightenment|metisse)$/;
 +	
  my $tmp="$ENV{'HOME'}/.local/share";
  $tmp="$ENV{'XDG_DATA_HOME'}" if $ENV{'XDG_DATA_HOME'};
  my @tmp=("/usr/local/share","/usr/share");
-@@ -281,42 +283,57 @@
+@@ -184,6 +186,8 @@
+ 		my $exists=0;
+ 		foreach my $dir(@icondirs) {
+ 			if(-f "$dir$icon") {
++			} elsif(-f "$dir$icon.svg") {
++				$icon.=".svg";
+ 			} elsif(-f "$dir$icon.xpm") {
+ 				$icon.=".xpm";
+ 			} elsif(-f "$dir$icon.png") {
+@@ -281,42 +285,57 @@
  my $tag;
  my $name;
  my $dir;
@@ -116,7 +125,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  }
  
  sub cor {
-@@ -335,20 +352,20 @@
+@@ -335,20 +354,20 @@
  		}
  		if($tag=~/^(and|or|not)$/) {
  			if ($tag eq 'or') {
@@ -143,7 +152,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  }
  
  sub cnot {
-@@ -369,20 +386,20 @@
+@@ -369,20 +388,20 @@
  		if($tag=~/^(and|or|not)$/) {	# I think it doesn't make any sense
  			warn "How did you get here!?\n" if $o_verbose;
  			if ($tag eq 'or') {
@@ -169,7 +178,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  }
  
  @tmp=grep -d, map {"$_/desktop-directories/"} @xdg_data_dirs;
-@@ -400,14 +417,14 @@
+@@ -400,14 +419,14 @@
  	}
  	if(($tag=~/^(and|or|not)$/)&& $include) {
  		if ($tag eq 'or') {
@@ -189,7 +198,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  		foreach my $dir (keys %{$apps[$name]}) {
  			$menu[$mno]{$happs[$name][0]}=[-1,$happs[$name][1],$happs[$name][2]];
  		}
-@@ -609,6 +626,25 @@
+@@ -609,6 +628,25 @@
  	}
  }
  
@@ -215,7 +224,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  $level="";
  sub icewm {
  	my $no=$_[0];
-@@ -719,6 +755,7 @@
+@@ -719,6 +757,7 @@
  sub afterstep {
  	my $no=$_[0];
  	my $dir=$_[1];
@@ -223,7 +232,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  	foreach my $entry(keys %{$menu[$no]}) {
  		$name=$entry;
  		if($menu[$no]{$entry}[0]<0) {
-@@ -740,6 +777,41 @@
+@@ -740,6 +779,41 @@
  	}
  }
  
@@ -265,7 +274,54 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  sub fvwm2 {
  	my $no=$_[0];
  	my $file;
-@@ -831,16 +903,19 @@
+@@ -765,6 +839,46 @@
+ 	print "\n";
+ }
+ 
++sub metisse {
++	my $no=$_[0];
++	my $file=$_[1];
++	$file=~s|^\.||;
++	my $basename=$_[2];
++	my $icon="";
++	foreach my $entry(keys %{$menu[$no]}) {
++		if($menu[$no]{$entry}[0]>=0) {
++			$name=substr($entry,1);
++			$name=~s|/||g;
++			my $menutitle=$name;
++			$name=~s/\s+/_/g;
++		      metisse($menu[$no]{$entry}[0],"$file.$name","$menutitle");
++		}
++	}
++	if (!$file) {
++		return;
++	}
++	print "DestroyMenu $file\n";
++	print "AddToMenu $file \"$basename\" Title\n";
++	foreach my $entry(sort keys %{$menu[$no]}) {
++		$icon=$menu[$no]{$entry}[1] if $o_icons;
++		$icon=scale_icon($icon,"png","-geometry 21x18") if $icon;
++		$icon="\%$icon\%" if $icon;
++		
++		if($menu[$no]{$entry}[0]<0) {
++			$name=$entry;
++			$name=~s/\"/\\\"/g;
++			print "+ \"$icon$name\"\tExec exec $menu[$no]{$entry}[2]\n";
++		} else {
++			$name=substr($entry,1);
++			$name=~s|/||g;
++			my $menutitle=$name;
++			$name=~s/\s+/_/g;
++			print "+ \"$icon$menutitle\"\tPopup\t$file.$name\n";
++		}
++	}
++	print "\n";
++}
++
+ sub olvwm {
+ 	my $no=$_[0];
+ 	foreach my $entry(sort keys %{$menu[$no]}) {
+@@ -831,16 +945,19 @@
  	open $F_OUT, ">> $dir/$_[1].menu" or warn "$dir/$_[1].menu: $!\n";
  	print $F_OUT "\"$_[2]\"\n";
  	foreach my $entry(sort keys %{$menu[$no]}) {
@@ -275,20 +331,22 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
 +		$icon=$menu[$no]{$entry}[1] if $o_icons;
 +		$icon=scale_icon($icon,"png","-geometry 18x18") if $icon;
  		if($menu[$no]{$entry}[0]<0) {
- 			$name=~s/\"/\\\"/g;
+-			$name=~s/\"/\\\"/g;
 -			print $F_OUT "\"$name\" \"$menu[$no]{$entry}[1]\" exec \"$menu[$no]{$entry}[2]\"\n";
++			$name=~s/\"/\'/g;
 +			print $F_OUT "\"$name\" \"$icon\" exec \"$menu[$no]{$entry}[2]\"\n";
  		} else {
  			$name=substr($name,1);
  			$name=~s|/||g;
  			my $name2=$name;
- 			$name2=~s/\"/\\\"/g;
+-			$name2=~s/\"/\\\"/g;
 -			print $F_OUT "\"$name2\" \"$menu[$no]{$entry}[1]\" menu \"$dir/$name2.menu\"\n";
++			$name2=~s/\"/\'/g;
 +			print $F_OUT "\"$name2\" \"$icon\" menu \"$dir/$name2.menu\"\n";
  			enlightenment($menu[$no]{$entry}[0],"$name","$name");
  		}
  	}
-@@ -914,10 +989,15 @@
+@@ -914,10 +1031,15 @@
  	}
  }
  
@@ -307,7 +365,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  
  if($o_output eq "icewm") {
  	icewm($o_strip);
-@@ -942,11 +1022,11 @@
+@@ -942,11 +1064,11 @@
  	exit;
  }
  if($o_output eq "xfce4") {
@@ -322,7 +380,7 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  	exit;
  }
  if($o_output eq "afterstep") {
-@@ -965,6 +1045,10 @@
+@@ -965,6 +1087,10 @@
  	afterstep($o_strip,$dir);
  	exit;
  }
@@ -333,7 +391,27 @@ diff -urN vfmg-0.9.18/vfmg vfmg-current/vfmg
  if($o_output eq "fluxbox") {	# This is the same as blackbox (I hope so)
  	print "[begin] (Fluxbox)\n" unless $o_nomenu;
  	blackbox($o_strip);
-@@ -997,6 +1081,13 @@
+@@ -976,6 +1102,19 @@
+ 	fvwm2($o_strip);
+ 	exit;
+ }
++
++if($o_output eq "metisse") {
++	$icon_dir="$ENV{'HOME'}/.fvwm-metisse/icons";
++	if(! -d "$icon_dir") {
++		if(-f "$icon_dir") {
++			rename("$icon_dir","$icon_dir.old");
++		}
++		mkpath("$icon_dir",0,0700);
++	}
++	metisse($o_strip,"", "metisse");
++	exit;
++}
++		
+ if($o_output eq "olvwm") {
+ 	olvwm($o_strip);
+ 	exit;
+@@ -997,6 +1136,13 @@
  		rename("$dir","$dir.old");
  	}
  	mkpath("$dir",0,0700);	# or die
@@ -355,28 +433,31 @@ diff -urN vfmg-0.9.18/vfmg.cron vfmg-current/vfmg.cron
 +15 */2 * * *	root	/etc/rc.d/init.d/vfmg restart >/dev/null 2>&1
 diff -urN vfmg-0.9.18/vfmg.html vfmg-current/vfmg.html
 --- vfmg-0.9.18/vfmg.html	2004-08-01 08:13:58.000000000 +0200
-+++ vfmg-current/vfmg.html	2004-11-14 05:10:20.000000000 +0100
++++ vfmg-current/vfmg.html	2004-12-09 21:38:31.000000000 +0100
 @@ -4,7 +4,7 @@
  	<title>VFolders Menu Generator home page</title>
  	<meta name="author" content="gotar">
  	<meta name="description" content="VFolders Menu Generator home page">
 -	<meta name="keywords" content="vfmg, menu, window manager, vfolders, aewm, afterstep, blackbox, enlightenment, fluxbox, fvwm2, icewm, olvwm, qvwm, wmaker, xfce4, xpde, fbpanel, openbox">
-+	<meta name="keywords" content="vfmg, menu, window manager, vfolders, aewm, afterstep, blackbox, enlightenment, fluxbox, fvwm, fvwm2, icewm, olvwm, qvwm, wmaker, xfce4, xpde, fbpanel, openbox">
++	<meta name="keywords" content="vfmg, menu, window manager, vfolders, aewm, afterstep, blackbox, enlightenment, fluxbox, fvwm, fvwm2, icewm, metisse, olvwm, qvwm, wmaker, xfce4, xpde, fbpanel, openbox">
  	<meta http-equiv="Content-Type" CONTENT="text/html; charset=iso-8859-1">
  </head>
  <body bgcolor=lightblue>
-@@ -38,6 +38,7 @@
+@@ -38,8 +38,10 @@
  <a TARGET="_blank" href="http://enlightenment.org/">enlightenment</a>,
  <a TARGET="_blank" href="http://fbpanel.sourceforge.net/">fbpanel</a>,
  <a TARGET="_blank" href="http://fluxbox.sourceforge.net/">fluxbox</a>,
 +<a TARGET="_blank" href="http://www.fvwm.org/">fvwm</a>,
  <a TARGET="_blank" href="http://www.fvwm.org/">fvwm2</a>,
  <a TARGET="_blank" href="http://www.icewm.org/">icewm</a>,
++<a TARGET="_blank" href="http://insitu.lri.fr/~chapuis/metisse/">metisse</a>,
  <a TARGET="_blank" href="http://www.phys.columbia.edu/~flame/olvwm.html">olvwm</a>,
+ <a TARGET="_blank" href="http://www.icculus.org/openbox/">openbox</a>,
+ <a TARGET="_blank" href="http://www.qvwm.org/">qvwm</a>,
 diff -urN vfmg-0.9.18/vfmg.init vfmg-current/vfmg.init
 --- vfmg-0.9.18/vfmg.init	2004-07-07 15:39:20.000000000 +0200
-+++ vfmg-current/vfmg.init	2004-11-27 19:08:58.000000000 +0100
-@@ -1,41 +1,56 @@
++++ vfmg-current/vfmg.init	2004-11-30 12:43:03.000000000 +0100
+@@ -1,11 +1,11 @@
  #!/bin/sh
 -# $Id$
 +# $Id$
@@ -390,21 +471,13 @@ diff -urN vfmg-0.9.18/vfmg.init vfmg-current/vfmg.init
  #
  # author:	Lukasz Pawelczyk <havner@pld-linux.org> 2004
  
- # Source function library
- . /etc/rc.d/init.d/functions
- 
-+# generate menus using chosen locale
-+if [ -f /etc/sysconfig/i18n ]; then
-+	. /etc/sysconfig/i18n
-+fi
-+
- if [ -f /etc/sysconfig/vfmg ]; then
- 	. /etc/sysconfig/vfmg
+@@ -17,25 +17,36 @@
  fi
  
  case "$1" in
 -	start|restart|reload|force-reload)
 +  start|restart|reload|force-reload)
++  	umask 022
  	if is_yes "$FLUXBOX" && [ -f /etc/X11/fluxbox/menu2 ]; then
  			show "Regenerating fluxbox menu"; busy
 -			if vfmg -i -f -x -c -s fluxbox > /etc/X11/fluxbox/menu2 2>/dev/null; then ok; else fail; fi
@@ -446,15 +519,28 @@ diff -urN vfmg-0.9.18/vfmg.init vfmg-current/vfmg.init
  esac
 diff -urN vfmg-0.9.18/vfmg.sysconfig vfmg-current/vfmg.sysconfig
 --- vfmg-0.9.18/vfmg.sysconfig	2004-07-06 23:28:10.000000000 +0200
-+++ vfmg-current/vfmg.sysconfig	2004-11-14 05:10:20.000000000 +0100
-@@ -3,6 +3,10 @@
++++ vfmg-current/vfmg.sysconfig	2004-11-30 12:43:37.000000000 +0100
+@@ -3,6 +3,11 @@
  
  XFCE4="yes"
  FLUXBOX="yes"
 +FVWM2="yes"
 +FVWM="yes"
 +
-+# VFMG_TERM="aterm -name xterm-%1 -e %2"
++# export VFMG_TERM="aterm -name xterm-%1 -e %2"
++# export LANG=pl_PL
  
  # This must be last line !
  # vi:syntax=sh:tw=78:ts=8:sw=4
+diff -urN vfmg-0.9.18/vfmg-zsh vfmg-current/vfmg-zsh
+--- vfmg-0.9.18/vfmg-zsh	2004-08-01 08:11:55.000000000 +0200
++++ vfmg-current/vfmg-zsh	2004-12-09 21:38:31.000000000 +0100
+@@ -1,7 +1,7 @@
+ #compdef vfmg
+ 
+ _arguments \
+-	':Output:(aewm afterstep blackbox enlightenment fbpanel fluxbox fvwm2 icewm openbox olvwm qvwm wmaker wmaker-old xfce4 xpde)' \
++	':Output:(aewm afterstep blackbox enlightenment fbpanel fluxbox fvwm2 icewm metisse openbox olvwm qvwm wmaker wmaker-old xfce4 xpde)' \
+ 	'(-h --help)'{-h,--help}'[print help]' \
+ 	'(-t --tags)'{-t,--tags}'[echo omitted tags to stderr]' \
+ 	'(-e --end)'{-e,--end}'[echo omitted XDG file ending to stderr]' \
