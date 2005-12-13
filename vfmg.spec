@@ -13,7 +13,7 @@ Patch0:		%{name}-current.patch
 Patch1:		%{name}-enlightenment_fix.patch
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
-Requires(post,preun): /sbin/chkconfig
+Requires(post,preun):	/sbin/chkconfig
 Requires:	xdg-menus
 Obsoletes:	wmconfig
 BuildArch:	noarch
@@ -79,9 +79,9 @@ fi
 %doc README vfmg.html
 %attr(755,root,root) %{_bindir}/*
 %attr(754,root,root) /etc/rc.d/init.d/vfmg
-%config(noreplace) %verify(not size mtime md5) /etc/sysconfig/vfmg
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/vfmg
 %{_datadir}/zsh/site-functions/*
 
 %files cron
 %defattr(644,root,root,755)
-%config(noreplace) %verify(not size mtime md5) /etc/cron.d/vfmg
+%config(noreplace) %verify(not md5 mtime size) /etc/cron.d/vfmg
