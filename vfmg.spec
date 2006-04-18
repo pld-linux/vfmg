@@ -2,15 +2,13 @@
 Summary:	VFolders Menu Generator
 Summary(pl):	Generator Menu opartego na VFolders
 Name:		vfmg
-Version:	0.9.18
-Release:	14
+Version:	0.9.95
+Release:	0.1
 License:	GPL
 Group:		X11/Window Managers/Tools
 Vendor:		GoTaR <gotar@pld-linux.org>
 Source0:	%{name}-%{version}.tar.bz2
-# Source0-md5:	0175143d8bd08a2a82bde106d191d418
-Patch0:		%{name}-current.patch
-Patch1:		%{name}-enlightenment_fix.patch
+# Source0-md5:	3fb569c3f2ecab3a20849d430a2b8002
 URL:		http://vfmg.sourceforge.net/
 BuildRequires:	rpm-perlprov
 Requires(post,preun):	/sbin/chkconfig
@@ -49,15 +47,14 @@ generowanie menu dla zarz±dców okien o okreslonych godzinach.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_datadir}/zsh/site-functions} \
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir},%{_datadir}/zsh/site-functions} \
 	$RPM_BUILD_ROOT/etc/{cron.d,rc.d/init.d,sysconfig}
 
 install vfmg $RPM_BUILD_ROOT%{_bindir}
+install vfmgrc $RPM_BUILD_ROOT%{_sysconfdir}
 install vfmg-zsh $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_vfmg
 install vfmg.init $RPM_BUILD_ROOT/etc/rc.d/init.d/vfmg
 install vfmg.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/vfmg
@@ -78,6 +75,7 @@ fi
 %defattr(644,root,root,755)
 %doc README vfmg.html
 %attr(755,root,root) %{_bindir}/*
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/vfmgrc
 %attr(754,root,root) /etc/rc.d/init.d/vfmg
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/vfmg
 %{_datadir}/zsh/site-functions/*
