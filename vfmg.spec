@@ -46,8 +46,8 @@ This package contains a configuration file that enables window manager
 menu generation to be performed regularily at given time.
 
 %description cron -l pl
-Pakiet ten zawiera plik konfiguracyjny umozliwiajacy regularne
-generowanie menu dla zarz±dców okien o okreslonych godzinach.
+Pakiet ten zawiera plik konfiguracyjny umo¿liwiaj±cy regularne
+generowanie menu dla zarz±dców okien o okre¶lonych godzinach.
 
 %prep
 %setup -q
