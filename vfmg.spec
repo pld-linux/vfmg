@@ -1,6 +1,6 @@
 %include	/usr/lib/rpm/macros.perl
 Summary:	VFolders Menu Generator
-Summary(pl):	Generator Menu opartego na VFolders
+Summary(pl.UTF-8):   Generator Menu opartego na VFolders
 Name:		vfmg
 Version:	0.9.95
 Release:	1
@@ -28,16 +28,16 @@ afterstep, fvwm2, olvwm, qvwm, enlightenment and fluxbox are
 supported, next coming soon) from desktop files conforming the
 freedesktop.org menu specification.
 
-%description -l pl
-Generator Menu opartego na VFolders. Generuje menu zarz±dców okien
-(jak dot±d wspierane s± tylko icewm, blackbox, window maker (oba
+%description -l pl.UTF-8
+Generator Menu opartego na VFolders. Generuje menu zarzÄ…dcÃ³w okien
+(jak dotÄ…d wspierane sÄ… tylko icewm, blackbox, window maker (oba
 style, stary oraz nowy), xfce4, aewm, afterstep, fvwm2, olvwm, qvwm,
-enlightenment i fluxbox, nastêpne wkrótce) z plików desktop
-wype³niaj±cych specyfikacjê menu z freedesktop.org.
+enlightenment i fluxbox, nastÄ™pne wkrÃ³tce) z plikÃ³w desktop
+wypeÅ‚niajÄ…cych specyfikacjÄ™ menu z freedesktop.org.
 
 %package cron
 Summary:	Crontab file for VFolders Menu Generator
-Summary(pl):	Plik crontaba dla generatora menu opartego na vfolders
+Summary(pl.UTF-8):   Plik crontaba dla generatora menu opartego na vfolders
 Group:		X11/Window Managers/Tools
 Requires:	crondaemon
 
@@ -45,9 +45,9 @@ Requires:	crondaemon
 This package contains a configuration file that enables window manager
 menu generation to be performed regularily at given time.
 
-%description cron -l pl
-Pakiet ten zawiera plik konfiguracyjny umo¿liwiaj±cy regularne
-generowanie menu dla zarz±dców okien o okre¶lonych godzinach.
+%description cron -l pl.UTF-8
+Pakiet ten zawiera plik konfiguracyjny umoÅ¼liwiajÄ…cy regularne
+generowanie menu dla zarzÄ…dcÃ³w okien o okreÅ›lonych godzinach.
 
 %prep
 %setup -q
