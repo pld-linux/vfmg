@@ -1,6 +1,6 @@
 %include	/usr/lib/rpm/macros.perl
 Summary:	VFolders Menu Generator
-Summary(pl.UTF-8):   Generator Menu opartego na VFolders
+Summary(pl.UTF-8):	Generator Menu opartego na VFolders
 Name:		vfmg
 Version:	0.9.95
 Release:	1
@@ -37,7 +37,7 @@ wypełniających specyfikację menu z freedesktop.org.
 
 %package cron
 Summary:	Crontab file for VFolders Menu Generator
-Summary(pl.UTF-8):   Plik crontaba dla generatora menu opartego na vfolders
+Summary(pl.UTF-8):	Plik crontaba dla generatora menu opartego na vfolders
 Group:		X11/Window Managers/Tools
 Requires:	crondaemon
 
