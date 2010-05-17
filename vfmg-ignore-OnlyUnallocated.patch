@@ -1,0 +1,27 @@
+diff -ur vfmg-0.9.95/vfmg vfmg-0.9.95.new/vfmg
+--- vfmg-0.9.95/vfmg	2006-04-19 02:02:33.000000000 +0200
++++ vfmg-0.9.95.new/vfmg	2010-05-17 13:23:39.165864707 +0200
+@@ -664,8 +664,12 @@
+ 	$#menu++;
+ 	my $mno = $#menu;
+ 	# $dirnum = $desknum + $mno;
++	my $ignore = 0;
+ 
+ 	while ( (my $tag = gettag()) ne "/Menu" ) {
++		if($tag eq 'OnlyUnallocated/') {
++			$ignore = 1;
++		}
+ 		if($tag eq 'Include') {
+ 			include($mno);
+ 			next;
+@@ -766,7 +770,9 @@
+ 		}
+ 		warn "Omitted tag: $tag\n" if $o_tags;	
+ 	}
+-	
++
++	return if ($ignore);
++
+ 	# if there was no <Directory>
+ 	$desktop[$dirnum] = {
+ 		file => $name,
