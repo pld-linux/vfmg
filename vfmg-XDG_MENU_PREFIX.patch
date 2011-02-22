@@ -16,8 +16,8 @@
  	local $/ = undef;
  	($file = <F_IN>) =~ y/ \t\r\n//d;
  	$file =~ s/<!--.*?-->//g;
---- /home/users/baggins/devel/PLD/rpm/BUILD/vfmg-0.9.95/vfmg.sysconfig~	2005-12-07 17:22:27.000000000 +0100
-+++ /home/users/baggins/devel/PLD/rpm/BUILD/vfmg-0.9.95/vfmg.sysconfig	2011-02-22 13:26:14.669831162 +0100
+--- vfmg-0.9.95/vfmg.sysconfig~	2005-12-07 17:22:27.000000000 +0100
++++ vfmg-0.9.95/vfmg.sysconfig	2011-02-22 13:26:14.669831162 +0100
 @@ -9,5 +9,7 @@
  # export VFMG_TERM="aterm -name xterm-%1 -e %2"
  # export LANG=pl_PL
