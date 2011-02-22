@@ -1,0 +1,18 @@
+--- vfmg-0.9.95/vfmg~	2011-02-22 12:03:59.971803362 +0100
++++ vfmg-0.9.95/vfmg	2011-02-22 12:16:50.471781710 +0100
+@@ -477,8 +477,14 @@
+ 
+ # read XDG menu specification
+ my $file;
++my $menu_file;
++if ($ENV{'XDG_MENU_PREFIX'}) {
++    $menu_file = "$ENV{'XDG_MENU_PREFIX'}applications.menu"
++} else {
++    $menu_file = "applications.menu";
++}
+ foreach my $tmp (@xdg_config_dirs) {
+-	open F_IN, "$tmp/applications.menu" or next;
++	open F_IN, "$tmp/$menu_file" or next;
+ 	local $/ = undef;
+ 	($file = <F_IN>) =~ y/ \t\r\n//d;
+ 	$file =~ s/<!--.*?-->//g;
