@@ -1,0 +1,40 @@
+--- vfmg-0.9.95/vfmg.init~	2006-04-18 18:35:22.000000000 +0200
++++ vfmg-0.9.95/vfmg.init	2013-08-16 21:23:06.368823641 +0200
+@@ -5,7 +5,7 @@
+ #
+ # chkconfig:	345 93 07
+ #
+-# description:	Support for fluxbox, XFCE4, fvwm, fvwm2
++# description:	Support for fluxbox, fvwm, fvwm2
+ #
+ # author:	Lukasz Pawelczyk <havner@pld-linux.org> 2004
+ 
+@@ -18,17 +18,12 @@
+ 
+ case "$1" in
+   start|restart|reload|force-reload)
+-  	umask 022
++	umask 022
+ 	if is_yes "$FLUXBOX" && [ -f /etc/X11/fluxbox/menu2 ]; then
+ 			show "Regenerating fluxbox menu"; busy
+ 			if vfmg fluxbox > /etc/X11/fluxbox/menu2. 2>/dev/null \
+ 				&& mv /etc/X11/fluxbox/menu2. /etc/X11/fluxbox/menu2; then ok; else fail; fi
+ 	fi
+-	if is_yes "$XFCE4" && [ -f /etc/xdg/xfce4/desktop/menu2.xml ]; then
+-			show "Regenerating XFCE4 menu"; busy
+-			if vfmg xfce4 > /etc/xdg/xfce4/desktop/menu2.xml. 2>/dev/null \
+-				&& mv -f /etc/xdg/xfce4/desktop/menu2.xml. /etc/xdg/xfce4/desktop/menu2.xml; then ok; else fail; fi
+-	fi
+ 	if is_yes "$FVWM2" && [ -f /etc/X11/fvwm2/fvwm2.menu2 ]; then
+ 			show "Regenerating FVWM2 menu"; busy
+ 			if vfmg fvwm2 > /etc/X11/fvwm2/fvwm2.menu2. 2>/dev/null \
+--- vfmg-0.9.95/vfmg.sysconfig~	2005-12-07 17:22:27.000000000 +0100
++++ vfmg-0.9.95/vfmg.sysconfig	2013-08-16 21:23:12.512310595 +0200
+@@ -1,7 +1,6 @@
+ # Here you can choose which windowmanagers will have regenerated menu
+ # with vfmg.init
+ 
+-XFCE4="yes"
+ FLUXBOX="yes"
+ FVWM2="yes"
+ FVWM="yes"
