@@ -1,0 +1,20 @@
+--- vfmg-0.9.95/vfmg~	2017-07-17 23:12:13.000000000 +0900
++++ vfmg-0.9.95/vfmg	2017-07-17 23:13:49.701818825 +0900
+@@ -206,7 +206,7 @@
+ 	$opt{$opt} = $rcopt{$opt} unless defined $opt{$opt};
+ 	$opt{$opt} = $defopt{$opt} unless defined $opt{$opt};
+ 	next unless defined $opt{$opt};
+-	$opt{$opt} =~ s/\${HOME}/$ENV{'HOME'}/go;
++	$opt{$opt} =~ s/\$\{HOME\}/$ENV{'HOME'}/go;
+ }
+ 
+ # check dependencies
+@@ -892,7 +892,7 @@
+ 	my $cnext = $cnum + 1;
+ 	my @apps;
+ 	my @tmp = ();
+-	@tmp = %{$menu[$no]} if defined %{$menu[$no]};
++	@tmp = %{$menu[$no]} if %{$menu[$no]};
+ 	my $all = ($#tmp + 1) / 2;
+ 	my $num = 0;
+ 	foreach my $entry (sort cmpdname keys %{$menu[$no]}) {
