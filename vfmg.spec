@@ -1,4 +1,3 @@
-%include	/usr/lib/rpm/macros.perl
 Summary:	VFolders Menu Generator
 Summary(pl.UTF-8):	Generator Menu opartego na VFolders
 Name:		vfmg
